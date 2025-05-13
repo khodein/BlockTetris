@@ -29,12 +29,12 @@ object ProjectSettings {
 }
 
 android {
-    namespace = "com.gg.tetris.block.app.game"
+    namespace = "com.gg.tetris.block.app"
 
     compileSdk = ProjectSettings.getFocusSdk()
 
     defaultConfig {
-        applicationId = "com.gg.tetris.block.app.game"
+        applicationId = "com.gg.tetris.block.app"
         minSdk = ProjectSettings.getMinSdk()
         targetSdk = ProjectSettings.getFocusSdk()
         versionCode = ProjectSettings.getCode()
