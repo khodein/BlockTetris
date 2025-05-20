@@ -20,38 +20,16 @@ class GameFragment : Fragment(R.layout.fragment_game) {
         super.onViewCreated(view, savedInstanceState)
         binding.root.setAllInserts()
         setObservable()
-//        val drawable = binding.root.getDrawable(R.drawable.ic_block_empty) ?: return
-//        val bitmap = drawableToBitmap(drawable)
-//        val blockList: List<GameAreaItem.Block> = buildList {
-//            repeat(64) {
-//                add(
-//                    GameAreaItem.Block(
-//                        ownerBlockId = "",
-//                        img = bitmap
-//                    )
-//                )
-//            }
-//        }
-//        binding.areaGame.bindState(GameAreaItem.State(blockList))
     }
 
     private fun setObservable() = with(viewModel) {
         blockListFlow.observe(this@GameFragment, binding.areaGame::bindBlockList)
-        backgroundGameAreaFlow.filterNotNull()
-            .observe(this@GameFragment, binding.areaGame::bindBackground)
-    }
+        backgroundGameAreaFlow.filterNotNull().observe(this@GameFragment, binding.areaGame::bindBackground)
 
-//    fun drawableToBitmap(drawable: Drawable): Bitmap {
-//        if (drawable is BitmapDrawable) {
-//            return drawable.bitmap
-//        }
-//
-//        val bitmap = createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight)
-//
-//        val canvas = Canvas(bitmap)
-//        drawable.setBounds(0, 0, canvas.width, canvas.height)
-//        drawable.draw(canvas)
-//
-//        return bitmap
-//    }
+        leftContainerBlockFlow.filterNotNull().observe(this@GameFragment, binding.blockLeftGame::bindState)
+        centerContainerBlockFlow.filterNotNull().observe(this@GameFragment, binding.blockCenterGame::bindState)
+        rightContainerBlockFlow.filterNotNull().observe(this@GameFragment, binding.blockRightGame::bindState)
+
+        refreshBlocksFlow.filterNotNull().observe(this@GameFragment, binding.refreshBlockGame::bindState)
+    }
 }

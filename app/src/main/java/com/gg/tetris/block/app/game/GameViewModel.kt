@@ -1,80 +1,110 @@
 package com.gg.tetris.block.app.game
 
 import androidx.lifecycle.ViewModel
-import com.gg.tetris.block.app.R
-import com.gg.tetris.block.app.resource.ResManager
-import com.gg.tetris.block.app.utils.dp
-import com.gg.tetris.block.app.view.area.GameAreaItem
+import com.gg.tetris.block.app.game.view.container_block.GameContainerBlockItem
+import com.gg.tetris.block.app.game.view.area.GameAreaItem
+import com.gg.tetris.block.app.game.mapper.GameAreaUiMapper
+import com.gg.tetris.block.app.game.mapper.figure_mapper.FigureUiMapper
+import com.gg.tetris.block.app.game.mapper.GameRefreshBlocksUiMapper
+import com.gg.tetris.block.app.game.random.GameBlocksRandomizerManager
+import com.gg.tetris.block.app.game.view.refresh.GameRefreshItem
+import com.gg.tetris.block.app.game.states.GameFigureState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class GameViewModel(
-    private val resManager: ResManager,
+    private val gameAreaUiMapper: GameAreaUiMapper,
+    private val gameRefreshBlocksUiMapper: GameRefreshBlocksUiMapper,
+    private val gameBlocksRandomizerManager: GameBlocksRandomizerManager,
+    private val figureUiMapper: FigureUiMapper,
 ) : ViewModel() {
 
-    private val _blockStateListFlow = MutableStateFlow<List<GameAreaItem.BlockState>>(emptyList())
-    val blockListFlow = _blockStateListFlow.asStateFlow()
+    private val _cellStateListFlow = MutableStateFlow<List<GameAreaItem.CellState>>(emptyList())
+    val blockListFlow = _cellStateListFlow.asStateFlow()
 
     private val _backgroundStateGameAreaFlow = MutableStateFlow<GameAreaItem.BackgroundState?>(null)
     val backgroundGameAreaFlow = _backgroundStateGameAreaFlow.asStateFlow()
 
-    private val emptyBitmap by lazy {
-        val drawable = resManager.getDrawable(R.drawable.ic_block_empty) ?: return@lazy null
-        resManager.getDrawableToBitmap(drawable)
-    }
+    private val _leftContainerBlockFlow = MutableStateFlow<GameContainerBlockItem.State?>(null)
+    val leftContainerBlockFlow = _leftContainerBlockFlow.asStateFlow()
+
+    private val _centerContainerBlockFlow = MutableStateFlow<GameContainerBlockItem.State?>(null)
+    val centerContainerBlockFlow = _centerContainerBlockFlow.asStateFlow()
+
+    private val _rightContainerBlockFlow = MutableStateFlow<GameContainerBlockItem.State?>(null)
+    val rightContainerBlockFlow = _rightContainerBlockFlow.asStateFlow()
+
+    private val _refreshBlocksFlow = MutableStateFlow<GameRefreshItem.State?>(null)
+    val refreshBlocksFlow = _refreshBlocksFlow.asStateFlow()
+
+    private var leftFigureState: GameFigureState = GameFigureState.EMPTY
+        set(value) {
+            _leftContainerBlockFlow.value = GameContainerBlockItem.State(
+                figureBlockState = figureUiMapper.map(value)
+            )
+            field = value
+        }
+
+    private var centerFigureState: GameFigureState = GameFigureState.EMPTY
+        set(value) {
+            _centerContainerBlockFlow.value = GameContainerBlockItem.State(
+                figureBlockState = figureUiMapper.map(value)
+            )
+            field = value
+        }
+
+    private var rightFigureState: GameFigureState = GameFigureState.EMPTY
+        set(value) {
+            _rightContainerBlockFlow.value = GameContainerBlockItem.State(
+                figureBlockState = figureUiMapper.map(value)
+            )
+            field = value
+        }
 
     init {
-        _backgroundStateGameAreaFlow.value = GameAreaItem.BackgroundState(
-            width = GAME_AREA_SIZE,
-            height = GAME_AREA_SIZE,
-            strokeWidth = GAME_AREA_STROKE_WIDTH,
-            strokeHalfWidth = GAME_AREA_HALF_STROKE_WIDTH,
-            raddi = GAME_AREA_RADDI,
-            strokeColor = resManager.getColor(R.color.game_stroke_surface),
-            backgroundColor = resManager.getColor(R.color.game_surface)
-        )
+        updateBackgroundStateGameArea()
+        updateBlockAreaList()
+        updateRefreshState()
 
-        _blockStateListFlow.value = buildList(64) {
-            var stepLeft = GAME_AREA_STROKE_WIDTH
-            var stepTop = GAME_AREA_STROKE_WIDTH
-            var count = 0
-
-            repeat(64) {
-                GameAreaItem.BlockState(
-                    ownerBlockId = "",
-                    left = stepLeft,
-                    top = stepTop,
-                    bitmap = emptyBitmap,
-                ).let(::add)
-
-                stepLeft += CELL_SIZE + CELL_PADDING
-                count++
-
-                if (count == 8) {
-                    stepLeft = GAME_AREA_STROKE_WIDTH
-                    stepTop += CELL_SIZE + CELL_PADDING
-                    count = 0
-                }
-            }
-        }
+        refreshBlocks()
     }
 
-    companion object {
-        val GAME_AREA_SIZE = 388.dp
-        val CELL_PADDING = 4.dp.toFloat()
-        val GAME_AREA_STROKE_WIDTH = 4.dp.toFloat()
-        val GAME_AREA_HALF_STROKE_WIDTH = GAME_AREA_STROKE_WIDTH / 2f
-        val CELL_SIZE = (GAME_AREA_SIZE - (CELL_PADDING * 2) - CELL_PADDING * 7) / 8
-        private val GAME_AREA_RADIUS = 8.dp.toFloat()
-        val GAME_AREA_RADDI = floatArrayOf(
-            GAME_AREA_RADIUS,
-            GAME_AREA_RADIUS,
-            GAME_AREA_RADIUS,
-            GAME_AREA_RADIUS,
-            GAME_AREA_RADIUS,
-            GAME_AREA_RADIUS,
-            GAME_AREA_RADIUS,
-            GAME_AREA_RADIUS,
+    private fun updateBlockAreaList() {
+        _cellStateListFlow.value = gameAreaUiMapper.mapBlockAreaList()
+    }
+
+    private fun updateBackgroundStateGameArea() {
+        _backgroundStateGameAreaFlow.value = gameAreaUiMapper.mapBackgroundAreaState()
+    }
+
+    private fun updateRefreshState() {
+        _refreshBlocksFlow.value = gameRefreshBlocksUiMapper.map(
+            count = 2,
+            onClickRefresh = ::refreshBlocks
         )
+    }
+
+    private fun refreshBlocks() {
+        gameBlocksRandomizerManager.getRandomFigure().forEachIndexed { index, figure ->
+            when (index) {
+                0 -> leftFigureState = GameFigureState(
+                    colorFigureState = figure.colorFigureState,
+                    figureState = figure.figureState,
+                    isContainer = true
+                )
+
+                1 -> centerFigureState = GameFigureState(
+                    colorFigureState = figure.colorFigureState,
+                    figureState = figure.figureState,
+                    isContainer = true
+                )
+
+                2 -> rightFigureState = GameFigureState(
+                    colorFigureState = figure.colorFigureState,
+                    figureState = figure.figureState,
+                    isContainer = true
+                )
+            }
+        }
     }
 }

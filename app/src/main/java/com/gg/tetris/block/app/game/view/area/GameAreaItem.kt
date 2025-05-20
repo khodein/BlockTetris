@@ -1,13 +1,14 @@
-package com.gg.tetris.block.app.view.area
+package com.gg.tetris.block.app.game.view.area
 
 import android.graphics.Bitmap
 import androidx.annotation.ColorInt
+import com.gg.tetris.block.app.game.states.BlockState
 
 class GameAreaItem {
 
     interface View {
         fun bindBackground(backgroundState: BackgroundState)
-        fun bindBlockList(list: List<BlockState>)
+        fun bindBlockList(list: List<GameAreaItem.CellState>)
     }
 
     data class BackgroundState(
@@ -42,37 +43,10 @@ class GameAreaItem {
         }
     }
 
-    data class BlockState(
+    data class CellState(
         val ownerBlockId: String,
-        val bitmap: Bitmap?,
-        val left: Float,
-        val top: Float,
-    )
-
-    enum class CellHorizontal {
-        A,
-        B,
-        C,
-        D,
-        E,
-        F,
-        G,
-        H
-    }
-
-    enum class CellVertical {
-        ONE,
-        TWO,
-        THREE,
-        FOUR,
-        FIVE,
-        SIX,
-        SEVEN,
-        EIGHT
-    }
-
-    data class Cell(
-        val vertical: CellVertical,
-        val horizontal: CellHorizontal,
-    )
+        override val bitmap: Bitmap?,
+        override val left: Float,
+        override val top: Float,
+    ) : BlockState
 }

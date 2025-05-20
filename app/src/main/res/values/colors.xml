@@ -4,6 +4,12 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="surface">#3F57FF</color>
+
     <color name="game_surface">#000D4D</color>
-    <color name="game_stroke_surface">#467AFF</color>
+    <color name="game_stroke">#467AFF</color>
+
+    <color name="game_container_block_stroke">#6B4AFF</color>
+    <color name="game_container_block_surface">#CC2D1196</color>
+
+    <color name="game_refresh_background">#FF9900</color>
 </resources>

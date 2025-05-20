@@ -1,4 +1,4 @@
-package com.gg.tetris.block.app.view.area
+package com.gg.tetris.block.app.game.view.area
 
 import android.content.Context
 import android.graphics.Canvas
@@ -36,7 +36,7 @@ class GameAreaItemView @JvmOverloads constructor(
     private val backgroundPath by lazy { Path() }
     private val backgroundStrokePath by lazy { Path() }
 
-    private var blockStateList = emptyList<GameAreaItem.BlockState>()
+    private var cellStateList = emptyList<GameAreaItem.CellState>()
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
@@ -59,7 +59,7 @@ class GameAreaItemView @JvmOverloads constructor(
     }
 
     private fun makeListBitmap(canvas: Canvas) {
-        blockStateList.forEachIndexed { index, gameBlock ->
+        cellStateList.forEachIndexed { index, gameBlock ->
             val bitmap = gameBlock.bitmap ?: return@forEachIndexed
             canvas.drawBitmap(bitmap, gameBlock.left, gameBlock.top, null)
         }
@@ -101,8 +101,8 @@ class GameAreaItemView @JvmOverloads constructor(
         invalidate()
     }
 
-    override fun bindBlockList(list: List<GameAreaItem.BlockState>) {
-        blockStateList = list
+    override fun bindBlockList(list: List<GameAreaItem.CellState>) {
+        cellStateList = list
         invalidate()
     }
 }
