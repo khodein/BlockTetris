@@ -2,14 +2,14 @@ package com.gg.tetris.block.app.game.states
 
 data class GameFigureState(
     override val figureState: FigureState,
-    override val colorFigureState: ColorFigureState,
+    override val colorState: ColorState,
     val isContainer: Boolean,
-) : IFigure {
+) : GameFigure {
 
     companion object {
         val EMPTY = GameFigureState(
             figureState = FigureState.None,
-            colorFigureState = ColorFigureState.EMPTY,
+            colorState = ColorState.EMPTY,
             isContainer = false,
         )
     }

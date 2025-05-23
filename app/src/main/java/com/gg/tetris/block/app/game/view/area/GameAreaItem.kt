@@ -2,6 +2,7 @@ package com.gg.tetris.block.app.game.view.area
 
 import android.graphics.Bitmap
 import androidx.annotation.ColorInt
+import com.gg.tetris.block.app.game.states.AreaOwnerState
 import com.gg.tetris.block.app.game.states.BlockState
 
 class GameAreaItem {
@@ -44,7 +45,7 @@ class GameAreaItem {
     }
 
     data class CellState(
-        val ownerBlockId: String,
+        val owner: AreaOwnerState,
         override val bitmap: Bitmap?,
         override val left: Float,
         override val top: Float,

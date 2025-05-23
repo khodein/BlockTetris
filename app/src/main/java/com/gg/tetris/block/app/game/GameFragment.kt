@@ -2,9 +2,11 @@ package com.gg.tetris.block.app.game
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.gg.tetris.block.app.R
 import com.gg.tetris.block.app.databinding.FragmentGameBinding
+import com.gg.tetris.block.app.game.states.GameCoordinateState
 import com.gg.tetris.block.app.utils.observe
 import com.gg.tetris.block.app.utils.setAllInserts
 import com.gg.tetris.block.app.utils.viewBinding
@@ -23,13 +25,51 @@ class GameFragment : Fragment(R.layout.fragment_game) {
     }
 
     private fun setObservable() = with(viewModel) {
-        blockListFlow.observe(this@GameFragment, binding.areaGame::bindBlockList)
-        backgroundGameAreaFlow.filterNotNull().observe(this@GameFragment, binding.areaGame::bindBackground)
+        blockListFlow
+            .observe(this@GameFragment, binding.areaGame::bindBlockList)
 
-        leftContainerBlockFlow.filterNotNull().observe(this@GameFragment, binding.blockLeftGame::bindState)
-        centerContainerBlockFlow.filterNotNull().observe(this@GameFragment, binding.blockCenterGame::bindState)
-        rightContainerBlockFlow.filterNotNull().observe(this@GameFragment, binding.blockRightGame::bindState)
+        backgroundGameAreaFlow
+            .filterNotNull()
+            .observe(this@GameFragment, binding.areaGame::bindBackground)
 
-        refreshBlocksFlow.filterNotNull().observe(this@GameFragment, binding.refreshBlockGame::bindState)
+        leftContainerBlockFlow
+            .filterNotNull()
+            .observe(this@GameFragment, binding.blockLeftGame::bindState)
+
+        centerContainerBlockFlow
+            .filterNotNull()
+            .observe(this@GameFragment, binding.blockCenterGame::bindState)
+
+        rightContainerBlockFlow
+            .filterNotNull()
+            .observe(this@GameFragment, binding.blockRightGame::bindState)
+
+        refreshBlocksFlow
+            .filterNotNull()
+            .observe(this@GameFragment, binding.refreshBlockGame::bindState)
+
+        coordinateStateFlow
+            .filterNotNull()
+            .observe(this@GameFragment, ::updateCoordinate)
+    }
+
+    private fun updateCoordinate(state: GameCoordinateState) = with(binding) {
+        areaGame.apply {
+            translationX = state.areaCoordinate.x
+            translationY = state.areaCoordinate.y
+            isVisible = true
+        }
+
+        containerBlocksGame.apply {
+            translationX = state.blocksCoordinate.x
+            translationY = state.blocksCoordinate.y
+            isVisible = true
+        }
+
+        refreshBlockGame.apply {
+            translationX = state.refreshCoordinate.x
+            translationY = state.refreshCoordinate.y
+            isVisible = true
+        }
     }
 }

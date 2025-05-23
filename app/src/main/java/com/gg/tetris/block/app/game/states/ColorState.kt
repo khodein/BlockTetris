@@ -3,7 +3,7 @@ package com.gg.tetris.block.app.game.states
 import androidx.annotation.DrawableRes
 import com.gg.tetris.block.app.R
 
-enum class ColorFigureState(@DrawableRes val blockRes: Int) {
+enum class ColorState(@DrawableRes val blockRes: Int) {
     EMPTY(R.drawable.ic_block_empty),
     CYAN(R.drawable.ic_block_cyan),
     BLUE(R.drawable.ic_block_blue),

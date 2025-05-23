@@ -1,31 +1,31 @@
-package com.gg.tetris.block.app.game.random
+package com.gg.tetris.block.app.game.mapper
 
-import com.gg.tetris.block.app.game.states.ColorFigureState
+import com.gg.tetris.block.app.game.states.ColorState
 import com.gg.tetris.block.app.game.states.FigureState
-import com.gg.tetris.block.app.game.states.IFigure
+import com.gg.tetris.block.app.game.states.GameFigure
 
-class GameBlocksRandomizerManager {
+class GameRandomizerMapper {
 
-    private val randomColorMap = hashMapOf<ColorFigureState, Int>()
+    private val randomColorMap = hashMapOf<ColorState, Int>()
     private val randomFigureMap = hashMapOf<String, Int>()
 
     init {
-        ColorFigureState.entries.forEach {
-            if (it == ColorFigureState.EMPTY) return@forEach
+        ColorState.entries.forEach {
+            if (it == ColorState.EMPTY) return@forEach
             randomColorMap[it] = 0
         }
 
-        FigureState.all.forEach {
+        FigureState.Companion.all.forEach {
             randomFigureMap[it.ownerId] = 0
         }
     }
 
-    fun getRandomFigure(): List<IFigure> {
+    fun getRandomFigure(): List<GameFigure> {
         val selectedFigures = randomFigureMap.entries
             .sortedBy { it.value }
             .distinctBy { it.key }
             .map { entry ->
-                FigureState.all.first { it.ownerId == entry.key }
+                FigureState.Companion.all.first { it.ownerId == entry.key }
             }
 
         val selectedColors = randomColorMap.entries
@@ -44,6 +44,6 @@ class GameBlocksRandomizerManager {
 
     private data class RandomFigure(
         override val figureState: FigureState,
-        override val colorFigureState: ColorFigureState
-    ) : IFigure
+        override val colorState: ColorState
+    ) : GameFigure
 }

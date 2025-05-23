@@ -1,6 +1,6 @@
 package com.gg.tetris.block.app.game.states
 
-interface IFigure {
+interface GameFigure {
     val figureState: FigureState
-    val colorFigureState: ColorFigureState
+    val colorState: ColorState
 }

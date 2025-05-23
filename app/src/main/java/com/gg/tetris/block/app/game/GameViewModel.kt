@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import com.gg.tetris.block.app.game.view.container_block.GameContainerBlockItem
 import com.gg.tetris.block.app.game.view.area.GameAreaItem
 import com.gg.tetris.block.app.game.mapper.GameAreaUiMapper
+import com.gg.tetris.block.app.game.mapper.GameCoordinateMapper
 import com.gg.tetris.block.app.game.mapper.figure_mapper.FigureUiMapper
 import com.gg.tetris.block.app.game.mapper.GameRefreshBlocksUiMapper
-import com.gg.tetris.block.app.game.random.GameBlocksRandomizerManager
+import com.gg.tetris.block.app.game.mapper.GameRandomizerMapper
+import com.gg.tetris.block.app.game.states.GameCoordinateState
 import com.gg.tetris.block.app.game.view.refresh.GameRefreshItem
 import com.gg.tetris.block.app.game.states.GameFigureState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +17,8 @@ import kotlinx.coroutines.flow.asStateFlow
 class GameViewModel(
     private val gameAreaUiMapper: GameAreaUiMapper,
     private val gameRefreshBlocksUiMapper: GameRefreshBlocksUiMapper,
-    private val gameBlocksRandomizerManager: GameBlocksRandomizerManager,
+    private val gameRandomizerMapper: GameRandomizerMapper,
+    private val gameCoordinateMapper: GameCoordinateMapper,
     private val figureUiMapper: FigureUiMapper,
 ) : ViewModel() {
 
@@ -36,6 +39,9 @@ class GameViewModel(
 
     private val _refreshBlocksFlow = MutableStateFlow<GameRefreshItem.State?>(null)
     val refreshBlocksFlow = _refreshBlocksFlow.asStateFlow()
+
+    private val _coordinateStateFlow = MutableStateFlow<GameCoordinateState?>(null)
+    val coordinateStateFlow = _coordinateStateFlow.asStateFlow()
 
     private var leftFigureState: GameFigureState = GameFigureState.EMPTY
         set(value) {
@@ -62,11 +68,16 @@ class GameViewModel(
         }
 
     init {
+        updateCoordinateState()
         updateBackgroundStateGameArea()
         updateBlockAreaList()
         updateRefreshState()
 
         refreshBlocks()
+    }
+
+    private fun updateCoordinateState() {
+        _coordinateStateFlow.value = gameCoordinateMapper.map()
     }
 
     private fun updateBlockAreaList() {
@@ -85,22 +96,22 @@ class GameViewModel(
     }
 
     private fun refreshBlocks() {
-        gameBlocksRandomizerManager.getRandomFigure().forEachIndexed { index, figure ->
+        gameRandomizerMapper.getRandomFigure().forEachIndexed { index, figure ->
             when (index) {
                 0 -> leftFigureState = GameFigureState(
-                    colorFigureState = figure.colorFigureState,
+                    colorState = figure.colorState,
                     figureState = figure.figureState,
                     isContainer = true
                 )
 
                 1 -> centerFigureState = GameFigureState(
-                    colorFigureState = figure.colorFigureState,
+                    colorState = figure.colorState,
                     figureState = figure.figureState,
                     isContainer = true
                 )
 
                 2 -> rightFigureState = GameFigureState(
-                    colorFigureState = figure.colorFigureState,
+                    colorState = figure.colorState,
                     figureState = figure.figureState,
                     isContainer = true
                 )

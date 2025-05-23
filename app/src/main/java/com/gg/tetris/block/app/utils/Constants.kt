@@ -2,6 +2,8 @@ package com.gg.tetris.block.app.utils
 
 object Constants {
 
+    val GAME_REFRESH_SIZE = 62.dp
+    val GAME_BLOCK_SIZE = 104.dp
     val GAME_AREA_SIZE = 388.dp
     val CELL_PADDING = 4.dp.toFloat()
     val GAME_AREA_STROKE_WIDTH = 4.dp.toFloat()

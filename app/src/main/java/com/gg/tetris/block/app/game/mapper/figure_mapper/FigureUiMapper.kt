@@ -26,7 +26,7 @@ class FigureUiMapper(
 
     fun map(state: GameFigureState): GameBlockFigureItem.State {
         val bitmap = gameBitmapUiMapper.getBlockBitmap(
-            state = state.colorFigureState,
+            state = state.colorState,
             isContainer = state.isContainer,
         )
 
@@ -83,7 +83,7 @@ class FigureUiMapper(
                 bitmap = bitmap,
             )
 
-            else -> GameBlockFigureItem.State(
+            is FigureState.None -> GameBlockFigureItem.State(
                 width = 0,
                 height = 0,
                 blocks = emptyList()

@@ -2,18 +2,18 @@ package com.gg.tetris.block.app.game.mapper
 
 import android.graphics.Bitmap
 import com.gg.tetris.block.app.R
-import com.gg.tetris.block.app.game.states.ColorFigureState
+import com.gg.tetris.block.app.game.states.ColorState
 import com.gg.tetris.block.app.resource.ResManager
 import com.gg.tetris.block.app.utils.Constants
 
 class GameBitmapUiMapper(
     private val resManager: ResManager,
 ) {
-    private val containerBlockMap = hashMapOf<ColorFigureState, Bitmap?>()
-    private val nonContainerBlockMap = hashMapOf<ColorFigureState, Bitmap?>()
+    private val containerBlockMap = hashMapOf<ColorState, Bitmap?>()
+    private val nonContainerBlockMap = hashMapOf<ColorState, Bitmap?>()
 
     fun getBlockBitmap(
-        state: ColorFigureState,
+        state: ColorState,
         isContainer: Boolean
     ): Bitmap? {
         return if (isContainer) {
@@ -28,18 +28,18 @@ class GameBitmapUiMapper(
     }
 
     private fun map(
-        state: ColorFigureState,
+        state: ColorState,
         isContainer: Boolean
     ): Bitmap? {
         val size = Constants.getCellSize(isContainer)
         return when(state) {
-            ColorFigureState.RED -> mapBlockRedBitmap(size)
-            ColorFigureState.BLUE -> mapBlockBlueBitmap(size)
-            ColorFigureState.CYAN -> mapBlockCyanBitmap(size)
-            ColorFigureState.GREEN -> mapBlockGreenBitmap(size)
-            ColorFigureState.ORANGE -> mapBlockOrangeBitmap(size)
-            ColorFigureState.YELLOW -> mapBlockYellowBitmap(size)
-            ColorFigureState.EMPTY -> mapBlockEmptyBitmap(size)
+            ColorState.RED -> mapBlockRedBitmap(size)
+            ColorState.BLUE -> mapBlockBlueBitmap(size)
+            ColorState.CYAN -> mapBlockCyanBitmap(size)
+            ColorState.GREEN -> mapBlockGreenBitmap(size)
+            ColorState.ORANGE -> mapBlockOrangeBitmap(size)
+            ColorState.YELLOW -> mapBlockYellowBitmap(size)
+            ColorState.EMPTY -> mapBlockEmptyBitmap(size)
         }
     }
 

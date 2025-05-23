@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import com.gg.tetris.block.app.R
 import com.gg.tetris.block.app.game.view.refresh.GameRefreshItem
 import com.gg.tetris.block.app.resource.ResManager
+import com.gg.tetris.block.app.utils.Constants
 import com.gg.tetris.block.app.utils.dp
 
 class GameRefreshBlocksUiMapper(
@@ -20,16 +21,12 @@ class GameRefreshBlocksUiMapper(
         onClickRefresh: () -> Unit
     ): GameRefreshItem.State {
         return GameRefreshItem.State(
-            width = SIZE,
-            height = SIZE,
+            width = Constants.GAME_REFRESH_SIZE,
+            height = Constants.GAME_REFRESH_SIZE,
             count = count,
             refreshBitmap = refreshBitmap,
             backgroundColor = resManager.getColor(R.color.game_refresh_background),
             onClickRefresh = onClickRefresh,
         )
-    }
-
-    companion object {
-        val SIZE = 62.dp
     }
 }
