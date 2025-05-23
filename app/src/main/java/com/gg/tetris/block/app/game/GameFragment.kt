@@ -25,7 +25,7 @@ class GameFragment : Fragment(R.layout.fragment_game) {
     }
 
     private fun setObservable() = with(viewModel) {
-        blockListFlow
+        cellListFlow
             .observe(this@GameFragment, binding.areaGame::bindBlockList)
 
         backgroundGameAreaFlow

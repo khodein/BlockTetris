@@ -1,9 +1,11 @@
 package com.gg.tetris.block.app.game.mapper
 
 import com.gg.tetris.block.app.R
-import com.gg.tetris.block.app.game.states.AreaOwnerState
-import com.gg.tetris.block.app.game.view.area.GameAreaItem
 import com.gg.tetris.block.app.game.states.ColorState
+import com.gg.tetris.block.app.game.states.GameCoordinate
+import com.gg.tetris.block.app.game.states.GameState
+import com.gg.tetris.block.app.game.states.OwnerState
+import com.gg.tetris.block.app.game.view.area.GameAreaItem
 import com.gg.tetris.block.app.resource.ResManager
 import com.gg.tetris.block.app.utils.Constants
 
@@ -24,22 +26,61 @@ class GameAreaUiMapper(
         )
     }
 
-    fun mapBlockAreaList(): List<GameAreaItem.CellState> {
-        val emptyBitmap = gameBitmapUiMapper.getBlockBitmap(
-            state = ColorState.EMPTY,
-            isContainer = false
-        )
+    fun mapGameState(
+        areaCoordinate: GameCoordinate,
+    ): List<GameState> {
+
+        var screenX =
+            (areaCoordinate.x + Constants.GAME_AREA_STROKE_WIDTH) + (Constants.CELL_SIZE / 2f)
+        var screenY =
+            (areaCoordinate.y + Constants.GAME_AREA_STROKE_WIDTH) + (Constants.CELL_SIZE / 2f)
+        var count = 0
+
+        return OwnerState.areaOwnerListState.map {
+            val state = GameState(
+                ownerState = it,
+                coordinate = GameCoordinate(
+                    x = screenX,
+                    y = screenY
+                ),
+                colorState = ColorState.EMPTY
+            )
+
+            screenX += Constants.CELL_SIZE + Constants.CELL_PADDING
+            count++
+
+            if (count == 8) {
+                screenX =
+                    (areaCoordinate.x + Constants.GAME_AREA_STROKE_WIDTH) + (Constants.CELL_SIZE / 2f)
+                screenY += Constants.CELL_SIZE + Constants.CELL_PADDING
+                count = 0
+            }
+
+            state
+        }
+    }
+
+    fun mapCellList(
+        listGameStates: List<GameState>
+    ): List<GameAreaItem.CellState> {
+        if (listGameStates.isEmpty()) {
+            return emptyList()
+        }
 
         var stepLeft = Constants.GAME_AREA_STROKE_WIDTH
         var stepTop = Constants.GAME_AREA_STROKE_WIDTH
         var count = 0
 
-        return AreaOwnerState.areaOwnerListState.map {
+        return listGameStates.map {
+            val bitmap = gameBitmapUiMapper.getBlockBitmap(
+                state = it.colorState,
+                isContainer = false
+            )
             val state = GameAreaItem.CellState(
-                owner = it,
+                owner = it.ownerState,
                 left = stepLeft,
                 top = stepTop,
-                bitmap = emptyBitmap,
+                bitmap = bitmap,
             )
 
             stepLeft += Constants.CELL_SIZE + Constants.CELL_PADDING

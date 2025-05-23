@@ -1,6 +1,6 @@
 package com.gg.tetris.block.app.game.states
 
-data class AreaOwnerState(
+data class OwnerState(
     val id: Int,
     val vertical: Vertical,
     val horizontal: Horizontal,
@@ -29,13 +29,13 @@ data class AreaOwnerState(
     }
 
     companion object {
-        val areaOwnerListState: List<AreaOwnerState> = buildList(64) {
+        val areaOwnerListState: List<OwnerState> = buildList(64) {
             var verticalOwnerState = Vertical.ONE
             var horizontalOwnerState = Horizontal.A
 
             repeat(64) { count ->
                 add(
-                    AreaOwnerState(
+                    OwnerState(
                         vertical = verticalOwnerState,
                         horizontal = horizontalOwnerState,
                         id = count

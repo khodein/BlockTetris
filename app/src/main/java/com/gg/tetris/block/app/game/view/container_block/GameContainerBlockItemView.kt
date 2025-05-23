@@ -8,6 +8,7 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
 import com.gg.tetris.block.app.R
 import com.gg.tetris.block.app.game.view.block_figure.GameBlockFigureItemView
+import com.gg.tetris.block.app.utils.Constants
 import com.gg.tetris.block.app.utils.corner.BorderType
 import com.gg.tetris.block.app.utils.corner.RoundMode
 import com.gg.tetris.block.app.utils.corner.ViewCorner
@@ -22,7 +23,6 @@ class GameContainerBlockItemView @JvmOverloads constructor(
 
     private val cornerStrokeColor by lazy { getColor(R.color.game_container_block_stroke) }
     private val cornerBackgroundColor by lazy { getColor(R.color.game_container_block_surface) }
-    private val size by lazy { 104.dp }
 
     private val figureView by lazy {
         GameBlockFigureItemView(context).apply {
@@ -37,8 +37,8 @@ class GameContainerBlockItemView @JvmOverloads constructor(
 
     init {
         layoutParams = ViewGroup.LayoutParams(
-            size,
-            size
+            Constants.GAME_BLOCK_SIZE,
+            Constants.GAME_BLOCK_SIZE,
         )
 
         ViewCorner.Border(
