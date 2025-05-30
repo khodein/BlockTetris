@@ -1,6 +1,5 @@
 package com.gg.tetris.block.app.game.mapper.figure_mapper.l_mapper
 
-import android.graphics.Bitmap
 import com.gg.tetris.block.app.game.mapper.figure_mapper.IFigureCommandMapper
 import com.gg.tetris.block.app.game.states.FigureState
 import com.gg.tetris.block.app.game.view.block_figure.GameBlockFigureItem
@@ -9,189 +8,272 @@ class FigureLCommandMapper : IFigureCommandMapper<FigureState.L> {
 
     override fun map(
         state: FigureState.L,
-        cellSize: Float,
-        paddingDelimiter: Float,
-        bitmap: Bitmap?
+        provider: IFigureCommandMapper.ItemProvider,
+        isContainerDefault: Boolean
     ): GameBlockFigureItem.State {
         return when (state) {
             is FigureState.L.R0 -> lR0(
-                cellSize = cellSize,
-                paddingDelimiter = paddingDelimiter,
-                bitmap = bitmap,
+                provider = provider,
+                isContainerDefault = isContainerDefault,
             )
 
             is FigureState.L.R90 -> lR90(
-                cellSize = cellSize,
-                paddingDelimiter = paddingDelimiter,
-                bitmap = bitmap,
+                provider = provider,
+                isContainerDefault = isContainerDefault,
             )
 
             is FigureState.L.R180 -> lR180(
-                cellSize = cellSize,
-                paddingDelimiter = paddingDelimiter,
-                bitmap = bitmap,
+                provider = provider,
+                isContainerDefault = isContainerDefault,
             )
 
             is FigureState.L.R270 -> lR270(
-                cellSize = cellSize,
-                paddingDelimiter = paddingDelimiter,
-                bitmap = bitmap,
+                provider = provider,
+                isContainerDefault = isContainerDefault,
             )
         }
     }
 
     private fun lR0(
-        cellSize: Float,
-        paddingDelimiter: Float,
-        bitmap: Bitmap?
+        provider: IFigureCommandMapper.ItemProvider,
+        isContainerDefault: Boolean
     ): GameBlockFigureItem.State {
-        val blocks = buildList<GameBlockFigureItem.FigureBlockState>(4) {
-            var left = 0f
-            var top = cellSize + paddingDelimiter
+        val containerBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
+        val originalBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
 
-            repeat(4) { count ->
-                GameBlockFigureItem.FigureBlockState(
-                    bitmap = bitmap,
-                    left = left,
-                    top = top
-                ).let(::add)
+        var (containerLeft, containerTop) = Pair(
+            0f,
+            provider.containerCellSize + provider.containerPaddingDelimiter
+        )
+        var (originalLeft, originalTop) = Pair(
+            0f,
+            provider.originalCellSize + provider.originalPaddingDelimiter
+        )
 
-                when (count) {
-                    0, 1 -> {
-                        left += cellSize + paddingDelimiter
-                    }
+        repeat(4) { count ->
+            containerBlocks += GameBlockFigureItem.FigureBlockState(
+                bitmap = provider.containerBitmap,
+                left = containerLeft,
+                top = containerTop
+            )
 
-                    else -> {
-                        top = 0f
-                    }
+            originalBlocks += GameBlockFigureItem.FigureBlockState(
+                bitmap = provider.containerBitmap,
+                left = originalLeft,
+                top = originalTop,
+            )
+
+            when (count) {
+                0, 1 -> {
+                    containerLeft += provider.containerCellSize + provider.containerPaddingDelimiter
+                    originalLeft += provider.originalCellSize + provider.originalPaddingDelimiter
+                }
+
+                else -> {
+                    containerTop = 0f
+                    originalTop = 0f
                 }
             }
         }
 
-        val height = (cellSize * 2) + paddingDelimiter
-        val width = (cellSize * 3) + paddingDelimiter * 2
+        val (containerState, originalState) = Pair(
+            GameBlockFigureItem.ContainerParamsState(
+                width = ((provider.containerCellSize * 3) + provider.containerPaddingDelimiter * 2).toInt(),
+                height = ((provider.containerCellSize * 2) + provider.containerPaddingDelimiter).toInt(),
+                blocks = containerBlocks,
+            ),
+
+            GameBlockFigureItem.OriginalParamsState(
+                width = ((provider.originalCellSize * 3) + provider.originalPaddingDelimiter * 2).toInt(),
+                height = ((provider.originalCellSize * 2) + provider.originalPaddingDelimiter).toInt(),
+                blocks = originalBlocks,
+            ),
+        )
 
         return GameBlockFigureItem.State(
-            containerWidth = width.toInt(),
-            `containerHeight:` = height.toInt(),
-            containerBlocks = blocks,
+            containerState = containerState,
+            originalState = originalState,
+            isContainer = isContainerDefault,
         )
     }
 
     private fun lR90(
-        cellSize: Float,
-        paddingDelimiter: Float,
-        bitmap: Bitmap?
+        provider: IFigureCommandMapper.ItemProvider,
+        isContainerDefault: Boolean
     ): GameBlockFigureItem.State {
-        val blocks = buildList<GameBlockFigureItem.FigureBlockState>(4) {
-            var left = 0f
-            var top = 0f
+        val containerBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
+        val originalBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
 
-            repeat(4) { count ->
-                GameBlockFigureItem.FigureBlockState(
-                    bitmap = bitmap,
-                    left = left,
-                    top = top
-                ).let(::add)
+        var (containerLeft, containerTop) = Pair(0f, 0f)
+        var (originalLeft, originalTop) = Pair(0f, 0f)
 
-                when (count) {
-                    0 -> {
-                        left += cellSize + paddingDelimiter
-                    }
+        repeat(4) { count ->
+            containerBlocks += GameBlockFigureItem.FigureBlockState(
+                bitmap = provider.containerBitmap,
+                left = containerLeft,
+                top = containerTop
+            )
 
-                    else -> {
-                        top += cellSize + paddingDelimiter
-                    }
+            originalBlocks += GameBlockFigureItem.FigureBlockState(
+                bitmap = provider.originalBitmap,
+                left = originalLeft,
+                top = originalTop
+            )
+
+            when (count) {
+                0 -> {
+                    containerLeft += provider.containerCellSize + provider.containerPaddingDelimiter
+                    originalLeft += provider.originalCellSize + provider.originalPaddingDelimiter
+                }
+
+                else -> {
+                    containerTop += provider.containerCellSize + provider.containerPaddingDelimiter
+                    originalTop += provider.originalCellSize + provider.originalPaddingDelimiter
                 }
             }
         }
 
-        val height = (cellSize * 3) + paddingDelimiter * 2
-        val width = (cellSize * 2) + paddingDelimiter
+        val (containerState, originalState) = Pair(
+            GameBlockFigureItem.ContainerParamsState(
+                width = ((provider.containerCellSize * 2) + provider.containerPaddingDelimiter).toInt(),
+                height = ((provider.containerCellSize * 3) + provider.containerPaddingDelimiter * 2).toInt(),
+                blocks = containerBlocks,
+            ),
+
+            GameBlockFigureItem.OriginalParamsState(
+                width = ((provider.originalCellSize * 2) + provider.originalPaddingDelimiter).toInt(),
+                height = ((provider.originalCellSize * 3) + provider.originalPaddingDelimiter * 2).toInt(),
+                blocks = containerBlocks,
+            ),
+        )
 
         return GameBlockFigureItem.State(
-            containerWidth = width.toInt(),
-            `containerHeight:` = height.toInt(),
-            containerBlocks = blocks,
+            containerState = containerState,
+            originalState = originalState,
+            isContainer = isContainerDefault,
         )
     }
 
     private fun lR180(
-        cellSize: Float,
-        paddingDelimiter: Float,
-        bitmap: Bitmap?
+        provider: IFigureCommandMapper.ItemProvider,
+        isContainerDefault: Boolean
     ): GameBlockFigureItem.State {
-        val blocks = buildList<GameBlockFigureItem.FigureBlockState>(4) {
-            var left = 0f
-            var top = 0f
+        val containerBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
+        val originalBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
 
-            repeat(4) { count ->
-                GameBlockFigureItem.FigureBlockState(
-                    bitmap = bitmap,
-                    left = left,
-                    top = top
-                ).let(::add)
+        var (containerLeft, containerTop) = Pair(0f, 0f)
+        var (originalLeft, originalTop) = Pair(0f, 0f)
 
-                when (count) {
-                    0, 1 -> {
-                        top = 0f
-                        left += cellSize + paddingDelimiter
-                    }
+        repeat(4) { count ->
+            containerBlocks += GameBlockFigureItem.FigureBlockState(
+                bitmap = provider.containerBitmap,
+                left = containerLeft,
+                top = containerTop
+            )
 
-                    else -> {
-                        top = cellSize + paddingDelimiter
-                        left = 0f
-                    }
+            originalBlocks += GameBlockFigureItem.FigureBlockState(
+                bitmap = provider.originalBitmap,
+                left = originalLeft,
+                top = originalTop
+            )
+
+            when (count) {
+                0, 1 -> {
+                    containerTop = 0f
+                    containerLeft += provider.containerCellSize + provider.containerPaddingDelimiter
+
+                    originalTop = 0f
+                    originalLeft += provider.originalCellSize + provider.originalPaddingDelimiter
+                }
+
+                else -> {
+                    containerLeft = 0f
+                    containerTop = provider.containerCellSize + provider.containerPaddingDelimiter
+
+                    originalTop = 0f
+                    originalTop = provider.originalCellSize + provider.originalPaddingDelimiter
                 }
             }
         }
 
-        val height = (cellSize * 2) + paddingDelimiter
-        val width = (cellSize * 3) + paddingDelimiter * 2
+        val (containerState, originalState) = Pair(
+            GameBlockFigureItem.ContainerParamsState(
+                width = ((provider.containerCellSize * 3) + provider.containerPaddingDelimiter * 2).toInt(),
+                height = ((provider.containerCellSize * 2) + provider.containerPaddingDelimiter).toInt(),
+                blocks = containerBlocks,
+            ),
+
+            GameBlockFigureItem.OriginalParamsState(
+                width = ((provider.originalCellSize * 3) + provider.originalPaddingDelimiter * 2).toInt(),
+                height = ((provider.originalCellSize * 2) + provider.originalPaddingDelimiter).toInt(),
+                blocks = containerBlocks,
+            ),
+        )
 
         return GameBlockFigureItem.State(
-            containerWidth = width.toInt(),
-            `containerHeight:` = height.toInt(),
-            containerBlocks = blocks,
+            containerState = containerState,
+            originalState = originalState,
+            isContainer = isContainerDefault,
         )
     }
 
     private fun lR270(
-        cellSize: Float,
-        paddingDelimiter: Float,
-        bitmap: Bitmap?
+        provider: IFigureCommandMapper.ItemProvider,
+        isContainerDefault: Boolean
     ): GameBlockFigureItem.State {
-        val blocks = buildList<GameBlockFigureItem.FigureBlockState>(4) {
-            var left = 0f
-            var top = 0f
+        val containerBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
+        val originalBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
 
-            repeat(4) { count ->
-                GameBlockFigureItem.FigureBlockState(
-                    bitmap = bitmap,
-                    left = left,
-                    top = top
-                ).let(::add)
+        var (containerLeft, containerTop) = Pair(0f, 0f)
+        var (originalLeft, originalTop) = Pair(0f, 0f)
 
-                when (count) {
-                    0, 1 -> {
-                        left = 0f
-                        top += cellSize + paddingDelimiter
-                    }
+        repeat(4) { count ->
+            containerBlocks += GameBlockFigureItem.FigureBlockState(
+                bitmap = provider.containerBitmap,
+                left = containerLeft,
+                top = containerTop,
+            )
 
-                    else -> {
-                        left += cellSize + paddingDelimiter
-                    }
+            originalBlocks += GameBlockFigureItem.FigureBlockState(
+                bitmap = provider.originalBitmap,
+                left = originalLeft,
+                top = originalTop,
+            )
+
+            when (count) {
+                0, 1 -> {
+                    containerLeft = 0f
+                    containerTop += provider.containerCellSize + provider.containerPaddingDelimiter
+
+                    originalLeft = 0f
+                    originalTop += provider.originalCellSize + provider.originalPaddingDelimiter
+                }
+
+                else -> {
+                    containerLeft += provider.containerCellSize + provider.containerPaddingDelimiter
+                    originalLeft += provider.originalCellSize + provider.originalPaddingDelimiter
                 }
             }
         }
 
-        val height = (cellSize * 3) + paddingDelimiter * 2
-        val width = (cellSize * 2) + paddingDelimiter
+        val (containerState, originalState) = Pair(
+            GameBlockFigureItem.ContainerParamsState(
+                width = ((provider.containerCellSize * 2) + provider.containerPaddingDelimiter).toInt(),
+                height = ((provider.containerCellSize * 3) + provider.containerPaddingDelimiter * 2).toInt(),
+                blocks = containerBlocks,
+            ),
+
+            GameBlockFigureItem.OriginalParamsState(
+                width = ((provider.originalCellSize * 2) + provider.originalPaddingDelimiter).toInt(),
+                height = ((provider.originalCellSize * 3) + provider.originalPaddingDelimiter * 2).toInt(),
+                blocks = originalBlocks,
+            ),
+        )
 
         return GameBlockFigureItem.State(
-            containerWidth = width.toInt(),
-            `containerHeight:` = height.toInt(),
-            containerBlocks = blocks,
+            containerState = containerState,
+            originalState = originalState,
+            isContainer = isContainerDefault,
         )
     }
 }

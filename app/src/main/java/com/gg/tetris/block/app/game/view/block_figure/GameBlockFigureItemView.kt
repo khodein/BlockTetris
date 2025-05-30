@@ -15,22 +15,29 @@ class GameBlockFigureItemView @JvmOverloads constructor(
     var state: GameBlockFigureItem.State? = null
         private set
 
+    private val isContainer: Boolean
+        get() = state?.isContainer != false
+
     private val figureWidth: Int
-        get() = if (state?.isContainer == true) {
-            state?.containerWidth
+        get() = if (isContainer) {
+            state?.containerState?.width
         } else {
-            state?.originalWidth
+            state?.originalState?.width
         } ?: 0
 
     private val figureHeight: Int
-        get() = if (state?.isContainer == true) {
-            state?.containerHeight
+        get() = if (isContainer) {
+            state?.containerState?.height
         } else {
-            state?.originalHeight
+            state?.originalState?.height
         } ?: 0
 
     private val blocks: List<FigureBlockState>
-        get() = state?.containerBlocks.orEmpty()
+        get() = if (isContainer) {
+            state?.containerState?.blocks
+        } else {
+            state?.originalState?.blocks
+        } ?: emptyList()
 
     override fun bindState(state: GameBlockFigureItem.State) {
         this.state = state

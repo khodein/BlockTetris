@@ -1,5 +1,6 @@
 package com.gg.tetris.block.app.game.mapper.figure_mapper
 
+import android.graphics.Bitmap
 import com.gg.tetris.block.app.game.mapper.GameBitmapUiMapper
 import com.gg.tetris.block.app.game.mapper.figure_mapper.i_mapper.FigureICommandMapper
 import com.gg.tetris.block.app.game.mapper.figure_mapper.j_mapper.FigureJCommandMapper
@@ -22,72 +23,72 @@ class FigureUiMapper(
     private val figureSCommandMapper: FigureSCommandMapper,
     private val figureZCommandMapper: FigureZCommandMapper,
     private val figureTCommandMapper: FigureTCommandMapper,
-) {
+) : IFigureCommandMapper.ItemProvider {
+
+    override val containerCellSize: Float = Constants.getCellSize(true)
+    override val containerPaddingDelimiter: Float = Constants.getCellPadding(true)
+
+    override val originalCellSize: Float = Constants.getCellSize(false)
+    override val originalPaddingDelimiter: Float = Constants.getCellPadding(false)
+
+    override var containerBitmap: Bitmap? = null
+    override var originalBitmap: Bitmap? = null
 
     fun map(state: GameFigureState): GameBlockFigureItem.State {
-        val bitmap = gameBitmapUiMapper.getBlockBitmap(
+        containerBitmap = gameBitmapUiMapper.getBlockBitmap(
             state = state.colorState,
-            isContainer = state.isContainer,
+            isContainer = true,
         )
 
-        val cellSize = Constants.getCellSize(state.isContainer)
-        val paddingDelimiter = Constants.getCellPadding(state.isContainer)
+        originalBitmap = gameBitmapUiMapper.getBlockBitmap(
+            state = state.colorState,
+            isContainer = false,
+        )
 
         return when (state.figureState) {
             is FigureState.I -> figureICommandMapper.map(
                 state = state.figureState,
-                cellSize = cellSize,
-                paddingDelimiter = paddingDelimiter,
-                bitmap = bitmap,
+                provider = this,
+                isContainerDefault = state.isContainer,
             )
 
             is FigureState.J -> figureJCommandMapper.map(
                 state = state.figureState,
-                cellSize = cellSize,
-                paddingDelimiter = paddingDelimiter,
-                bitmap = bitmap,
+                provider = this,
+                isContainerDefault = state.isContainer,
             )
 
             is FigureState.L -> figureLCommandMapper.map(
                 state = state.figureState,
-                cellSize = cellSize,
-                paddingDelimiter = paddingDelimiter,
-                bitmap = bitmap,
+                provider = this,
+                isContainerDefault = state.isContainer,
             )
 
             is FigureState.O -> figureOCommandMapper.map(
                 state = state.figureState,
-                cellSize = cellSize,
-                paddingDelimiter = paddingDelimiter,
-                bitmap = bitmap,
+                provider = this,
+                isContainerDefault = state.isContainer,
             )
 
             is FigureState.S -> figureSCommandMapper.map(
                 state = state.figureState,
-                cellSize = cellSize,
-                paddingDelimiter = paddingDelimiter,
-                bitmap = bitmap,
+                provider = this,
+                isContainerDefault = state.isContainer,
             )
 
             is FigureState.Z -> figureZCommandMapper.map(
                 state = state.figureState,
-                cellSize = cellSize,
-                paddingDelimiter = paddingDelimiter,
-                bitmap = bitmap,
+                provider = this,
+                isContainerDefault = state.isContainer,
             )
 
             is FigureState.T -> figureTCommandMapper.map(
                 state = state.figureState,
-                cellSize = cellSize,
-                paddingDelimiter = paddingDelimiter,
-                bitmap = bitmap,
+                provider = this,
+                isContainerDefault = state.isContainer,
             )
 
-            is FigureState.None -> GameBlockFigureItem.State(
-                containerWidth = 0,
-                `containerHeight:` = 0,
-                containerBlocks = emptyList()
-            )
+            is FigureState.None -> GameBlockFigureItem.EMPTY
         }
     }
 }

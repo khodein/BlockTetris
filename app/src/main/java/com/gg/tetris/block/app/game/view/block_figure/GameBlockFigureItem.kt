@@ -10,18 +10,58 @@ class GameBlockFigureItem {
     }
 
     data class State(
-        val containerWidth: Int,
-        val containerHeight: Int,
-        val originalWidth: Int,
-        val originalHeight: Int,
-        val containerBlocks: List<FigureBlockState>,
-        val originalBlocks: List<FigureBlockState>,
-        val isContainer: Boolean,
+        val containerState: ContainerParamsState,
+        val originalState: OriginalParamsState,
+        val isContainer: Boolean = true,
     )
+
+    data class ContainerParamsState(
+        override val width: Int,
+        override val height: Int,
+        override val blocks: List<FigureBlockState>
+    ) : ParamsState {
+
+        companion object {
+            val EMPTY = ContainerParamsState(
+                width = 0,
+                height = 0,
+                blocks = emptyList()
+            )
+        }
+    }
+
+    data class OriginalParamsState(
+        override val width: Int,
+        override val height: Int,
+        override val blocks: List<FigureBlockState>
+    ) : ParamsState {
+
+        companion object {
+            val EMPTY = OriginalParamsState(
+                width = 0,
+                height = 0,
+                blocks = emptyList()
+            )
+        }
+    }
+
+    interface ParamsState {
+        val width: Int
+        val height: Int
+        val blocks: List<FigureBlockState>
+    }
 
     data class FigureBlockState(
         override val bitmap: Bitmap?,
         override val left: Float,
         override val top: Float
     ) : BlockState
+
+    companion object {
+        val EMPTY = State(
+            containerState = ContainerParamsState.EMPTY,
+            originalState = OriginalParamsState.EMPTY,
+            isContainer = true
+        )
+    }
 }

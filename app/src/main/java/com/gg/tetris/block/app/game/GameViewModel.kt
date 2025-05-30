@@ -53,8 +53,6 @@ class GameViewModel(
             field = value
         }
 
-    private var dragFigureState: GameFigureState = GameFigureState.EMPTY
-
     private var leftFigureState: GameFigureState = GameFigureState.EMPTY
         set(value) {
             _leftContainerBlockFlow.value = GameContainerBlockItem.State(
@@ -135,7 +133,7 @@ class GameViewModel(
     override fun onDrag(view: View?, event: DragEvent?): Boolean {
         when (event?.action) {
             DragEvent.ACTION_DRAG_STARTED -> {
-                dragFigureState = when (event.clipDescription.label) {
+                val dragFigureState = when (event.clipDescription.label) {
                     GameContainerBlockItem.LEFT_TAG -> {
                         val state = leftFigureState
                         state.copy(isContainer = false)
@@ -163,7 +161,7 @@ class GameViewModel(
             }
 
             DragEvent.ACTION_DRAG_EXITED -> {
-                dragFigureState = GameFigureState.EMPTY
+
             }
         }
         return true
