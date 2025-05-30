@@ -12,15 +12,28 @@ class GameBlockFigureItemView @JvmOverloads constructor(
     defStyleAttr: Int = 0,
 ) : View(context, attrs, defStyleAttr), GameBlockFigureItem.View {
 
-    private var figureWidth: Int = 0
-    private var figureHeight: Int = 0
-    private var blocks: List<FigureBlockState> = emptyList()
+    var state: GameBlockFigureItem.State? = null
+        private set
+
+    private val figureWidth: Int
+        get() = if (state?.isContainer == true) {
+            state?.containerWidth
+        } else {
+            state?.originalWidth
+        } ?: 0
+
+    private val figureHeight: Int
+        get() = if (state?.isContainer == true) {
+            state?.containerHeight
+        } else {
+            state?.originalHeight
+        } ?: 0
+
+    private val blocks: List<FigureBlockState>
+        get() = state?.containerBlocks.orEmpty()
 
     override fun bindState(state: GameBlockFigureItem.State) {
-        figureWidth = state.width
-        figureHeight = state.height
-        blocks = state.blocks
-
+        this.state = state
         requestLayout()
     }
 

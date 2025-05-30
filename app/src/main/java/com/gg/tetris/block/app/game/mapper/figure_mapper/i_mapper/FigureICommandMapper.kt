@@ -1,9 +1,9 @@
 package com.gg.tetris.block.app.game.mapper.figure_mapper.i_mapper
 
 import android.graphics.Bitmap
-import com.gg.tetris.block.app.game.view.block_figure.GameBlockFigureItem
 import com.gg.tetris.block.app.game.mapper.figure_mapper.IFigureCommandMapper
 import com.gg.tetris.block.app.game.states.FigureState
+import com.gg.tetris.block.app.game.view.block_figure.GameBlockFigureItem
 
 class FigureICommandMapper: IFigureCommandMapper<FigureState.I> {
 
@@ -50,9 +50,9 @@ class FigureICommandMapper: IFigureCommandMapper<FigureState.I> {
         val width = (cellSize * 4) + paddingDelimiter * 3
 
         return GameBlockFigureItem.State(
-            width = width.toInt(),
-            height = height.toInt(),
-            blocks = blocks,
+            containerWidth = width.toInt(),
+            `containerHeight:` = height.toInt(),
+            containerBlocks = blocks,
         )
     }
 
@@ -78,9 +78,9 @@ class FigureICommandMapper: IFigureCommandMapper<FigureState.I> {
         val width = cellSize
 
         return GameBlockFigureItem.State(
-            width = width.toInt(),
-            height = height.toInt(),
-            blocks = blocks,
+            containerWidth = width.toInt(),
+            `containerHeight:` = height.toInt(),
+            containerBlocks = blocks,
         )
     }
 }

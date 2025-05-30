@@ -10,9 +10,13 @@ class GameBlockFigureItem {
     }
 
     data class State(
-        val width: Int,
-        val height: Int,
-        val blocks: List<FigureBlockState>,
+        val containerWidth: Int,
+        val containerHeight: Int,
+        val originalWidth: Int,
+        val originalHeight: Int,
+        val containerBlocks: List<FigureBlockState>,
+        val originalBlocks: List<FigureBlockState>,
+        val isContainer: Boolean,
     )
 
     data class FigureBlockState(

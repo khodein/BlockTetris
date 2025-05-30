@@ -84,9 +84,9 @@ class FigureUiMapper(
             )
 
             is FigureState.None -> GameBlockFigureItem.State(
-                width = 0,
-                height = 0,
-                blocks = emptyList()
+                containerWidth = 0,
+                `containerHeight:` = 0,
+                containerBlocks = emptyList()
             )
         }
     }

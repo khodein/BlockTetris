@@ -20,7 +20,9 @@ class GameFragment : Fragment(R.layout.fragment_game) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.root.setOnDragListener(viewModel)
         binding.root.setAllInserts()
+
         setObservable()
     }
 

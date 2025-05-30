@@ -1,9 +1,9 @@
 package com.gg.tetris.block.app.game.mapper.figure_mapper.t_mapper
 
 import android.graphics.Bitmap
-import com.gg.tetris.block.app.game.view.block_figure.GameBlockFigureItem
 import com.gg.tetris.block.app.game.mapper.figure_mapper.IFigureCommandMapper
 import com.gg.tetris.block.app.game.states.FigureState
+import com.gg.tetris.block.app.game.view.block_figure.GameBlockFigureItem
 
 class FigureTCommandMapper : IFigureCommandMapper<FigureState.T> {
 
@@ -79,9 +79,9 @@ class FigureTCommandMapper : IFigureCommandMapper<FigureState.T> {
         val height = cellSize * 2 + paddingDelimiter
 
         return GameBlockFigureItem.State(
-            width = width.toInt(),
-            height = height.toInt(),
-            blocks = blocks,
+            containerWidth = width.toInt(),
+            `containerHeight:` = height.toInt(),
+            containerBlocks = blocks,
         )
     }
 
@@ -124,9 +124,9 @@ class FigureTCommandMapper : IFigureCommandMapper<FigureState.T> {
         val height = cellSize * 3 + paddingDelimiter * 2
 
         return GameBlockFigureItem.State(
-            width = width.toInt(),
-            height = height.toInt(),
-            blocks = blocks,
+            containerWidth = width.toInt(),
+            `containerHeight:` = height.toInt(),
+            containerBlocks = blocks,
         )
     }
 
@@ -169,9 +169,9 @@ class FigureTCommandMapper : IFigureCommandMapper<FigureState.T> {
         val height = cellSize * 2 + paddingDelimiter
 
         return GameBlockFigureItem.State(
-            width = width.toInt(),
-            height = height.toInt(),
-            blocks = blocks,
+            containerWidth = width.toInt(),
+            `containerHeight:` = height.toInt(),
+            containerBlocks = blocks,
         )
     }
 
@@ -214,9 +214,9 @@ class FigureTCommandMapper : IFigureCommandMapper<FigureState.T> {
         val height = cellSize * 3 + paddingDelimiter * 2
 
         return GameBlockFigureItem.State(
-            width = width.toInt(),
-            height = height.toInt(),
-            blocks = blocks,
+            containerWidth = width.toInt(),
+            `containerHeight:` = height.toInt(),
+            containerBlocks = blocks,
         )
     }
 }

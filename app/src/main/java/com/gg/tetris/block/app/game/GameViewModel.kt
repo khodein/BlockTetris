@@ -1,5 +1,8 @@
 package com.gg.tetris.block.app.game
 
+import android.view.DragEvent
+import android.view.View
+import android.view.View.OnDragListener
 import androidx.lifecycle.ViewModel
 import com.gg.tetris.block.app.game.mapper.GameAreaUiMapper
 import com.gg.tetris.block.app.game.mapper.GameCoordinateMapper
@@ -21,7 +24,7 @@ class GameViewModel(
     private val gameRandomizerMapper: GameRandomizerMapper,
     private val gameCoordinateMapper: GameCoordinateMapper,
     private val figureUiMapper: FigureUiMapper,
-) : ViewModel() {
+) : ViewModel(), OnDragListener {
 
     private val _cellListFlow = MutableStateFlow<List<GameAreaItem.CellState>>(emptyList())
     val cellListFlow = _cellListFlow.asStateFlow()
@@ -50,9 +53,12 @@ class GameViewModel(
             field = value
         }
 
+    private var dragFigureState: GameFigureState = GameFigureState.EMPTY
+
     private var leftFigureState: GameFigureState = GameFigureState.EMPTY
         set(value) {
             _leftContainerBlockFlow.value = GameContainerBlockItem.State(
+                tag = GameContainerBlockItem.LEFT_TAG,
                 figureBlockState = figureUiMapper.map(value)
             )
             field = value
@@ -61,6 +67,7 @@ class GameViewModel(
     private var centerFigureState: GameFigureState = GameFigureState.EMPTY
         set(value) {
             _centerContainerBlockFlow.value = GameContainerBlockItem.State(
+                tag = GameContainerBlockItem.CENTER_TAG,
                 figureBlockState = figureUiMapper.map(value)
             )
             field = value
@@ -69,6 +76,7 @@ class GameViewModel(
     private var rightFigureState: GameFigureState = GameFigureState.EMPTY
         set(value) {
             _rightContainerBlockFlow.value = GameContainerBlockItem.State(
+                tag = GameContainerBlockItem.RIGHT_TAG,
                 figureBlockState = figureUiMapper.map(value)
             )
             field = value
@@ -122,5 +130,42 @@ class GameViewModel(
                 )
             }
         }
+    }
+
+    override fun onDrag(view: View?, event: DragEvent?): Boolean {
+        when (event?.action) {
+            DragEvent.ACTION_DRAG_STARTED -> {
+                dragFigureState = when (event.clipDescription.label) {
+                    GameContainerBlockItem.LEFT_TAG -> {
+                        val state = leftFigureState
+                        state.copy(isContainer = false)
+                    }
+
+                    GameContainerBlockItem.CENTER_TAG -> {
+                        val state = centerFigureState
+                        state.copy(isContainer = false)
+                    }
+
+                    GameContainerBlockItem.RIGHT_TAG -> {
+                        val state = rightFigureState
+                        state.copy(isContainer = false)
+                    }
+
+                    else -> GameFigureState.EMPTY
+                }
+            }
+
+            DragEvent.ACTION_DROP -> {
+
+            }
+
+            DragEvent.ACTION_DRAG_LOCATION -> {
+            }
+
+            DragEvent.ACTION_DRAG_EXITED -> {
+                dragFigureState = GameFigureState.EMPTY
+            }
+        }
+        return true
     }
 }
