@@ -58,7 +58,7 @@ class GameViewModel(
     private var leftFigureState: GameFigureState = GameFigureState.EMPTY
         set(value) {
             _leftContainerBlockFlow.value = GameContainerBlockItem.State(
-                tag = GameContainerBlockItem.LEFT_TAG,
+                tag = GameContainerBlockItem.Tag.LEFT,
                 figureBlockState = figureUiMapper.map(value)
             )
             field = value
@@ -67,7 +67,7 @@ class GameViewModel(
     private var centerFigureState: GameFigureState = GameFigureState.EMPTY
         set(value) {
             _centerContainerBlockFlow.value = GameContainerBlockItem.State(
-                tag = GameContainerBlockItem.CENTER_TAG,
+                tag = GameContainerBlockItem.Tag.CENTER,
                 figureBlockState = figureUiMapper.map(value)
             )
             field = value
@@ -76,7 +76,7 @@ class GameViewModel(
     private var rightFigureState: GameFigureState = GameFigureState.EMPTY
         set(value) {
             _rightContainerBlockFlow.value = GameContainerBlockItem.State(
-                tag = GameContainerBlockItem.RIGHT_TAG,
+                tag = GameContainerBlockItem.Tag.RIGHT,
                 figureBlockState = figureUiMapper.map(value)
             )
             field = value
@@ -130,7 +130,9 @@ class GameViewModel(
     }
 
     override fun onDrag(view: View?, event: DragEvent?): Boolean {
-        val figureTag = event?.clipDescription?.label ?: ""
+        val figureTag = event?.clipDescription?.label?.let {
+            GameContainerBlockItem.Tag.valueOf(it.toString())
+        }
 
         when (event?.action) {
             DragEvent.ACTION_DRAG_STARTED -> onDragStarted(figureTag)
@@ -184,22 +186,22 @@ class GameViewModel(
     }
 
     private fun onDragStarted(
-        figureTag: CharSequence
+        figureTag: GameContainerBlockItem.Tag?
     ) {
         dragFigureState = when (figureTag) {
-            GameContainerBlockItem.LEFT_TAG -> {
+            GameContainerBlockItem.Tag.LEFT -> {
                 val state = leftFigureState
                 leftFigureState = GameFigureState.EMPTY
                 state
             }
 
-            GameContainerBlockItem.CENTER_TAG -> {
+            GameContainerBlockItem.Tag.CENTER -> {
                 val state = centerFigureState
                 centerFigureState = GameFigureState.EMPTY
                 state
             }
 
-            GameContainerBlockItem.RIGHT_TAG -> {
+            GameContainerBlockItem.Tag.RIGHT -> {
                 val state = rightFigureState
                 rightFigureState = GameFigureState.EMPTY
                 state

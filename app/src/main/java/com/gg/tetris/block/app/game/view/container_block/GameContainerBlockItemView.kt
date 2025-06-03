@@ -97,7 +97,7 @@ class GameContainerBlockItemView @JvmOverloads constructor(
     }
 
     override fun bindState(state: GameContainerBlockItem.State) {
-        figureView.tag = state.tag
+        figureView.tag = state.tag.name
         figureView.bindState(state.figureBlockState)
     }
 

@@ -10,13 +10,13 @@ class GameContainerBlockItem {
     }
 
     class State(
-        val tag: String,
+        val tag: Tag,
         val figureBlockState: GameBlockFigureItem.State,
     )
 
-    companion object {
-        const val LEFT_TAG = "LEFT_TAG"
-        const val CENTER_TAG = "CENTER_TAG"
-        const val RIGHT_TAG = "RIGHT_TAG"
+    enum class Tag {
+        LEFT,
+        CENTER,
+        RIGHT,
     }
 }
