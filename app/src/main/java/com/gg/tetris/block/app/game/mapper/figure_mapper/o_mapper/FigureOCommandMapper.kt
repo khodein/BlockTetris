@@ -9,19 +9,14 @@ class FigureOCommandMapper : IFigureCommandMapper<FigureState.O> {
     override fun map(
         state: FigureState.O,
         provider: IFigureCommandMapper.ItemProvider,
-        isContainerDefault: Boolean,
     ): GameBlockFigureItem.State {
         return when (state) {
-            is FigureState.O.X2X2 -> x2x2(
-                provider = provider,
-                isContainerDefault = isContainerDefault,
-            )
+            is FigureState.O.X2X2 -> x2x2(provider = provider)
         }
     }
 
     private fun x2x2(
         provider: IFigureCommandMapper.ItemProvider,
-        isContainerDefault: Boolean,
     ): GameBlockFigureItem.State {
         val containerBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
         val originalBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
@@ -84,7 +79,6 @@ class FigureOCommandMapper : IFigureCommandMapper<FigureState.O> {
         return GameBlockFigureItem.State(
             containerState = containerState,
             originalState = originalState,
-            isContainer = isContainerDefault,
         )
     }
 }

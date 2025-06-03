@@ -13,7 +13,13 @@ class GameBlockFigureItem {
         val containerState: ContainerParamsState,
         val originalState: OriginalParamsState,
         val isContainer: Boolean = true,
-    )
+    ) {
+        val originalTouchX: Int
+            get() = originalState.width / 2
+
+        val originalTouchY: Int
+            get() = originalState.height + originalState.height / 3
+    }
 
     data class ContainerParamsState(
         override val width: Int,

@@ -9,9 +9,7 @@ interface IFigureCommandMapper<F : FigureState> {
     fun map(
         state: F,
         provider: ItemProvider,
-        isContainerDefault: Boolean = true,
     ): GameBlockFigureItem.State
-
 
     interface ItemProvider {
         val containerCellSize: Float

@@ -47,6 +47,8 @@ class GameViewModel(
     private val _coordinateStateFlow = MutableStateFlow<GameCoordinateState?>(null)
     val coordinateStateFlow = _coordinateStateFlow.asStateFlow()
 
+    private var dragFigureState: GameFigureState = GameFigureState.EMPTY
+
     private var gameList: List<GameState> = emptyList()
         set(value) {
             _cellListFlow.value = gameAreaUiMapper.mapCellList(value)
@@ -112,58 +114,110 @@ class GameViewModel(
                 0 -> leftFigureState = GameFigureState(
                     colorState = figure.colorState,
                     figureState = figure.figureState,
-                    isContainer = true
                 )
 
                 1 -> centerFigureState = GameFigureState(
                     colorState = figure.colorState,
                     figureState = figure.figureState,
-                    isContainer = true
                 )
 
                 2 -> rightFigureState = GameFigureState(
                     colorState = figure.colorState,
                     figureState = figure.figureState,
-                    isContainer = true
                 )
             }
         }
     }
 
     override fun onDrag(view: View?, event: DragEvent?): Boolean {
+        val figureTag = event?.clipDescription?.label ?: ""
+
         when (event?.action) {
-            DragEvent.ACTION_DRAG_STARTED -> {
-                val dragFigureState = when (event.clipDescription.label) {
-                    GameContainerBlockItem.LEFT_TAG -> {
-                        val state = leftFigureState
-                        state.copy(isContainer = false)
-                    }
-
-                    GameContainerBlockItem.CENTER_TAG -> {
-                        val state = centerFigureState
-                        state.copy(isContainer = false)
-                    }
-
-                    GameContainerBlockItem.RIGHT_TAG -> {
-                        val state = rightFigureState
-                        state.copy(isContainer = false)
-                    }
-
-                    else -> GameFigureState.EMPTY
-                }
-            }
+            DragEvent.ACTION_DRAG_STARTED -> onDragStarted(figureTag)
 
             DragEvent.ACTION_DROP -> {
+                val coordinate = coordinateStateFlow.value
+                if (coordinate == null) {
+                    return false
+                }
 
+                val rectFigureState = figureUiMapper.mapRectFigureState(
+                    eventX = event.x,
+                    eventY = event.y,
+                    gameFigureState = dragFigureState
+                )
+
+                val match = gameList.filter { gameState ->
+                    isPointInsideObject(
+                        touchX = gameState.coordinate.x,
+                        touchY = gameState.coordinate.y,
+                        left = rectFigureState.left,
+                        top = rectFigureState.top,
+                        right = rectFigureState.right,
+                        bottom = rectFigureState.bottom
+                    )
+                }
+
+                var list = gameList.toMutableList()
+                match.forEach { gameState ->
+                    val index = list.indexOf(gameState)
+                    list[index] = gameState.copy(colorState = dragFigureState.colorState)
+                }
+                gameList = list
+
+                dragFigureState = GameFigureState.EMPTY
             }
 
             DragEvent.ACTION_DRAG_LOCATION -> {
+
             }
 
             DragEvent.ACTION_DRAG_EXITED -> {
 
             }
+
+            else -> {
+
+            }
         }
         return true
+    }
+
+    private fun onDragStarted(
+        figureTag: CharSequence
+    ) {
+        dragFigureState = when (figureTag) {
+            GameContainerBlockItem.LEFT_TAG -> {
+                val state = leftFigureState
+                leftFigureState = GameFigureState.EMPTY
+                state
+            }
+
+            GameContainerBlockItem.CENTER_TAG -> {
+                val state = centerFigureState
+                centerFigureState = GameFigureState.EMPTY
+                state
+            }
+
+            GameContainerBlockItem.RIGHT_TAG -> {
+                val state = rightFigureState
+                rightFigureState = GameFigureState.EMPTY
+                state
+
+            }
+
+            else -> GameFigureState.EMPTY
+        }
+    }
+
+    private fun isPointInsideObject(
+        touchX: Float,
+        touchY: Float,
+        left: Float,
+        right: Float,
+        top: Float,
+        bottom: Float
+    ): Boolean {
+        return touchX in left..right && touchY in top..bottom
     }
 }

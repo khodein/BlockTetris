@@ -1,58 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/rootGame"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.gg.tetris.block.app.game.view.area.GameAreaItemView
-        android:id="@+id/areaGame"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone" />
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/containerBlocksGame"
+    <FrameLayout
+        android:id="@+id/containerGame"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone">
+        android:layout_height="match_parent">
 
-        <com.gg.tetris.block.app.game.view.container_block.GameContainerBlockItemView
-            android:id="@+id/blockLeftGame"
-            android:layout_width="104dp"
-            android:layout_height="104dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/blockCenterGame"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <com.gg.tetris.block.app.game.view.area.GameAreaItemView
+            android:id="@+id/areaGame"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
 
-        <com.gg.tetris.block.app.game.view.container_block.GameContainerBlockItemView
-            android:id="@+id/blockCenterGame"
-            android:layout_width="104dp"
-            android:layout_height="104dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/blockRightGame"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/blockLeftGame"
-            app:layout_constraintTop_toTopOf="parent" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/containerBlocksGame"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
 
-        <com.gg.tetris.block.app.game.view.container_block.GameContainerBlockItemView
-            android:id="@+id/blockRightGame"
-            android:layout_width="104dp"
-            android:layout_height="104dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@+id/blockCenterGame"
-            app:layout_constraintTop_toTopOf="parent" />
+            <com.gg.tetris.block.app.game.view.container_block.GameContainerBlockItemView
+                android:id="@+id/blockLeftGame"
+                android:layout_width="104dp"
+                android:layout_height="104dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/blockCenterGame"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <com.gg.tetris.block.app.game.view.container_block.GameContainerBlockItemView
+                android:id="@+id/blockCenterGame"
+                android:layout_width="104dp"
+                android:layout_height="104dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/blockRightGame"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/blockLeftGame"
+                app:layout_constraintTop_toTopOf="parent" />
 
-    <com.gg.tetris.block.app.game.view.refresh.GameRefreshItemView
-        android:id="@+id/refreshBlockGame"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone" />
+            <com.gg.tetris.block.app.game.view.container_block.GameContainerBlockItemView
+                android:id="@+id/blockRightGame"
+                android:layout_width="104dp"
+                android:layout_height="104dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/blockCenterGame"
+                app:layout_constraintTop_toTopOf="parent" />
 
-</FrameLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.gg.tetris.block.app.game.view.refresh.GameRefreshItemView
+            android:id="@+id/refreshBlockGame"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -9,24 +9,15 @@ class FigureZCommandMapper : IFigureCommandMapper<FigureState.Z> {
     override fun map(
         state: FigureState.Z,
         provider: IFigureCommandMapper.ItemProvider,
-        isContainerDefault: Boolean,
     ): GameBlockFigureItem.State {
         return when (state) {
-            is FigureState.Z.R0 -> zR0(
-                provider = provider,
-                isContainerDefault = isContainerDefault,
-            )
-
-            is FigureState.Z.R90 -> zR90(
-                provider = provider,
-                isContainerDefault = isContainerDefault,
-            )
+            is FigureState.Z.R0 -> zR0(provider = provider)
+            is FigureState.Z.R90 -> zR90(provider = provider)
         }
     }
 
     private fun zR0(
         provider: IFigureCommandMapper.ItemProvider,
-        isContainerDefault: Boolean,
     ): GameBlockFigureItem.State {
         val containerBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
         val originalBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
@@ -83,13 +74,11 @@ class FigureZCommandMapper : IFigureCommandMapper<FigureState.Z> {
         return GameBlockFigureItem.State(
             containerState = containerState,
             originalState = originalState,
-            isContainer = isContainerDefault,
         )
     }
 
     private fun zR90(
         provider: IFigureCommandMapper.ItemProvider,
-        isContainerDefault: Boolean,
     ): GameBlockFigureItem.State {
         val containerBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
         val originalBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
@@ -146,7 +135,6 @@ class FigureZCommandMapper : IFigureCommandMapper<FigureState.Z> {
         return GameBlockFigureItem.State(
             containerState = containerState,
             originalState = originalState,
-            isContainer = isContainerDefault,
         )
     }
 }

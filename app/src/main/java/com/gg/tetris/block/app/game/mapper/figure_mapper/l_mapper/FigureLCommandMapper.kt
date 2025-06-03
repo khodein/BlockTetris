@@ -9,34 +9,17 @@ class FigureLCommandMapper : IFigureCommandMapper<FigureState.L> {
     override fun map(
         state: FigureState.L,
         provider: IFigureCommandMapper.ItemProvider,
-        isContainerDefault: Boolean
     ): GameBlockFigureItem.State {
         return when (state) {
-            is FigureState.L.R0 -> lR0(
-                provider = provider,
-                isContainerDefault = isContainerDefault,
-            )
-
-            is FigureState.L.R90 -> lR90(
-                provider = provider,
-                isContainerDefault = isContainerDefault,
-            )
-
-            is FigureState.L.R180 -> lR180(
-                provider = provider,
-                isContainerDefault = isContainerDefault,
-            )
-
-            is FigureState.L.R270 -> lR270(
-                provider = provider,
-                isContainerDefault = isContainerDefault,
-            )
+            is FigureState.L.R0 -> lR0(provider = provider)
+            is FigureState.L.R90 -> lR90(provider = provider)
+            is FigureState.L.R180 -> lR180(provider = provider)
+            is FigureState.L.R270 -> lR270(provider = provider)
         }
     }
 
     private fun lR0(
-        provider: IFigureCommandMapper.ItemProvider,
-        isContainerDefault: Boolean
+        provider: IFigureCommandMapper.ItemProvider
     ): GameBlockFigureItem.State {
         val containerBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
         val originalBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
@@ -93,13 +76,11 @@ class FigureLCommandMapper : IFigureCommandMapper<FigureState.L> {
         return GameBlockFigureItem.State(
             containerState = containerState,
             originalState = originalState,
-            isContainer = isContainerDefault,
         )
     }
 
     private fun lR90(
         provider: IFigureCommandMapper.ItemProvider,
-        isContainerDefault: Boolean
     ): GameBlockFigureItem.State {
         val containerBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
         val originalBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
@@ -150,13 +131,11 @@ class FigureLCommandMapper : IFigureCommandMapper<FigureState.L> {
         return GameBlockFigureItem.State(
             containerState = containerState,
             originalState = originalState,
-            isContainer = isContainerDefault,
         )
     }
 
     private fun lR180(
         provider: IFigureCommandMapper.ItemProvider,
-        isContainerDefault: Boolean
     ): GameBlockFigureItem.State {
         val containerBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
         val originalBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
@@ -213,13 +192,11 @@ class FigureLCommandMapper : IFigureCommandMapper<FigureState.L> {
         return GameBlockFigureItem.State(
             containerState = containerState,
             originalState = originalState,
-            isContainer = isContainerDefault,
         )
     }
 
     private fun lR270(
         provider: IFigureCommandMapper.ItemProvider,
-        isContainerDefault: Boolean
     ): GameBlockFigureItem.State {
         val containerBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
         val originalBlocks = mutableListOf<GameBlockFigureItem.FigureBlockState>()
@@ -273,7 +250,6 @@ class FigureLCommandMapper : IFigureCommandMapper<FigureState.L> {
         return GameBlockFigureItem.State(
             containerState = containerState,
             originalState = originalState,
-            isContainer = isContainerDefault,
         )
     }
 }

@@ -31,8 +31,8 @@ sealed interface FigureState {
     }
 
     sealed class S(override val ownerId: String) : FigureState {
-        data object R0 : S("SR0")
-        data object R90 : S("SR90")
+        data object R0 : S(ownerId = "SR0")
+        data object R90 : S(ownerId = "SR90")
     }
 
     sealed class Z(override val ownerId: String) : FigureState {

@@ -4,13 +4,18 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipDescription
 import android.content.Context
+import android.graphics.Point
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.MotionEvent
+import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
 import com.gg.tetris.block.app.R
+import com.gg.tetris.block.app.game.view.block_figure.GameBlockFigureItem
 import com.gg.tetris.block.app.game.view.block_figure.GameBlockFigureItemView
 import com.gg.tetris.block.app.utils.Constants
 import com.gg.tetris.block.app.utils.corner.BorderType
@@ -39,6 +44,30 @@ class GameContainerBlockItemView @JvmOverloads constructor(
         }
     }
 
+    private val handler = Handler(Looper.getMainLooper())
+
+    private fun getRunDragAndDrop(
+        state: GameBlockFigureItem.State
+    ) = Runnable {
+        val figureShadow = GameDragShadowBuilder(
+            view = figureView,
+            state = state,
+        )
+        val figureClipItem = ClipData.Item(figureView.tag as? CharSequence)
+        val figureClipData = ClipData(
+            figureView.tag as? CharSequence,
+            arrayOf(ClipDescription.MIMETYPE_TEXT_PLAIN),
+            figureClipItem
+        )
+
+        figureView.startDragAndDrop(
+            figureClipData,
+            figureShadow,
+            figureView,
+            DRAG_FLAG_OPAQUE,
+        )
+    }
+
     init {
         layoutParams = ViewGroup.LayoutParams(
             Constants.GAME_BLOCK_SIZE,
@@ -58,19 +87,13 @@ class GameContainerBlockItemView @JvmOverloads constructor(
     }
 
     private fun onClick() {
-        val figureShadow = DragShadowBuilder(figureView)
-        val figureClipItem = ClipData.Item(figureView.tag as? CharSequence)
-        val figureClipData = ClipData(
-            figureView.tag as? CharSequence,
-            arrayOf(ClipDescription.MIMETYPE_TEXT_PLAIN),
-            figureClipItem
-        )
-        figureView.startDragAndDrop(
-            figureClipData,
-            figureShadow,
-            figureView,
-            0
-        )
+        val state = figureView.state ?: return
+        if (state == GameBlockFigureItem.EMPTY) {
+            return
+        }
+        val newState = state.copy(isContainer = false)
+        figureView.bindState(newState)
+        handler.post(getRunDragAndDrop(newState))
     }
 
     override fun bindState(state: GameContainerBlockItem.State) {
@@ -87,6 +110,20 @@ class GameContainerBlockItemView @JvmOverloads constructor(
             }
 
             else -> false
+        }
+    }
+
+    private class GameDragShadowBuilder(
+        view: View,
+        private val state: GameBlockFigureItem.State
+    ) : DragShadowBuilder(view) {
+
+        override fun onProvideShadowMetrics(outShadowSize: Point, outShadowTouchPoint: Point) {
+            val width = state.originalState.width
+            val height = state.originalState.height
+
+            outShadowSize.set(width, height)
+            outShadowTouchPoint.set(state.originalTouchX, state.originalTouchY)
         }
     }
 }
