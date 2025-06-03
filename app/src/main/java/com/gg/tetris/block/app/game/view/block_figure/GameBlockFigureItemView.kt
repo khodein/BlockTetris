@@ -2,6 +2,7 @@ package com.gg.tetris.block.app.game.view.block_figure
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 import com.gg.tetris.block.app.game.view.block_figure.GameBlockFigureItem.FigureBlockState
@@ -17,6 +18,8 @@ class GameBlockFigureItemView @JvmOverloads constructor(
 
     private val isContainer: Boolean
         get() = state?.isContainer != false
+
+    private val bitmapPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     private val figureWidth: Int
         get() = if (isContainer) {
@@ -53,7 +56,7 @@ class GameBlockFigureItemView @JvmOverloads constructor(
         super.onDraw(canvas)
         blocks.forEachIndexed { index, block ->
             val bitmap = block.bitmap ?: return@forEachIndexed
-            canvas.drawBitmap(bitmap, block.left, block.top, null)
+            canvas.drawBitmap(bitmap, block.left, block.top, bitmapPaint)
         }
     }
 }
