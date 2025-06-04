@@ -6,7 +6,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.gg.tetris.block.app.R
 import com.gg.tetris.block.app.databinding.FragmentGameBinding
-import com.gg.tetris.block.app.game.states.GameCoordinateState
+import com.gg.tetris.block.app.game.states.game.GameCoordinateState
 import com.gg.tetris.block.app.utils.observe
 import com.gg.tetris.block.app.utils.setAllInserts
 import com.gg.tetris.block.app.utils.viewBinding
@@ -27,22 +27,22 @@ class GameFragment : Fragment(R.layout.fragment_game) {
     }
 
     private fun setObservable() = with(viewModel) {
-        cellListFlow
+        blocksFlow
             .observe(this@GameFragment, binding.areaGame::bindBlockList)
 
-        backgroundGameAreaFlow
+        backgroundAreaFlow
             .filterNotNull()
             .observe(this@GameFragment, binding.areaGame::bindBackground)
 
-        leftContainerBlockFlow
+        leftContainerFigureFlow
             .filterNotNull()
             .observe(this@GameFragment, binding.blockLeftGame::bindState)
 
-        centerContainerBlockFlow
+        centerContainerFigureFlow
             .filterNotNull()
             .observe(this@GameFragment, binding.blockCenterGame::bindState)
 
-        rightContainerBlockFlow
+        rightContainerFigureFlow
             .filterNotNull()
             .observe(this@GameFragment, binding.blockRightGame::bindState)
 

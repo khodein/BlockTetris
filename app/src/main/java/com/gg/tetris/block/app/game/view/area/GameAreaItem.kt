@@ -2,17 +2,16 @@ package com.gg.tetris.block.app.game.view.area
 
 import android.graphics.Bitmap
 import androidx.annotation.ColorInt
-import com.gg.tetris.block.app.game.states.BlockState
-import com.gg.tetris.block.app.game.states.OwnerState
+import com.gg.tetris.block.app.game.states.owner.OwnerState
 
 class GameAreaItem {
 
     interface View {
-        fun bindBackground(backgroundState: BackgroundState)
-        fun bindBlockList(list: List<GameAreaItem.CellState>)
+        fun bindBackground(background: Background)
+        fun bindBlockList(list: List<GameAreaItem.Block>)
     }
 
-    data class BackgroundState(
+    data class Background(
         val width: Int,
         val height: Int,
         val strokeWidth: Float,
@@ -25,7 +24,7 @@ class GameAreaItem {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
 
-            other as BackgroundState
+            other as Background
 
             if (width != other.width) return false
             if (height != other.height) return false
@@ -44,10 +43,10 @@ class GameAreaItem {
         }
     }
 
-    data class CellState(
+    data class Block(
         val owner: OwnerState,
-        override val bitmap: Bitmap?,
-        override val left: Float,
-        override val top: Float,
-    ) : BlockState
+        val bitmap: Bitmap?,
+        val left: Float,
+        val top: Float,
+    )
 }

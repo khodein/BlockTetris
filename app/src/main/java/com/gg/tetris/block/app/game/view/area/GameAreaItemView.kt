@@ -36,7 +36,7 @@ class GameAreaItemView @JvmOverloads constructor(
     private val backgroundPath by lazy { Path() }
     private val backgroundStrokePath by lazy { Path() }
 
-    private var cellStateList = emptyList<GameAreaItem.CellState>()
+    private var blockList = emptyList<GameAreaItem.Block>()
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
@@ -59,23 +59,23 @@ class GameAreaItemView @JvmOverloads constructor(
     }
 
     private fun makeListBitmap(canvas: Canvas) {
-        cellStateList.forEachIndexed { index, gameBlock ->
+        blockList.forEachIndexed { index, gameBlock ->
             val bitmap = gameBlock.bitmap ?: return@forEachIndexed
             canvas.drawBitmap(bitmap, gameBlock.left, gameBlock.top, null)
         }
     }
 
-    override fun bindBackground(backgroundState: GameAreaItem.BackgroundState) {
-        gameWidth = backgroundState.width
-        gameHeight = backgroundState.height
+    override fun bindBackground(background: GameAreaItem.Background) {
+        gameWidth = background.width
+        gameHeight = background.height
 
         backgroundPaint.apply {
-            color = backgroundState.backgroundColor
+            color = background.backgroundColor
         }
 
         strokePaint.apply {
-            color = backgroundState.strokeColor
-            strokeWidth = backgroundState.strokeWidth
+            color = background.strokeColor
+            strokeWidth = background.strokeWidth
         }
 
         val backgroundRect = Rect(
@@ -86,23 +86,23 @@ class GameAreaItemView @JvmOverloads constructor(
         )
 
         backgroundRoundRectF.set(backgroundRect)
-        backgroundRoundRectF.inset(backgroundState.strokeHalfWidth, backgroundState.strokeHalfWidth)
+        backgroundRoundRectF.inset(background.strokeHalfWidth, background.strokeHalfWidth)
 
         backgroundPath.reset()
-        backgroundPath.addRoundRect(backgroundRoundRectF, backgroundState.raddi, Path.Direction.CW)
+        backgroundPath.addRoundRect(backgroundRoundRectF, background.raddi, Path.Direction.CW)
 
         backgroundStrokePath.reset()
         backgroundStrokePath.addRoundRect(
             backgroundRoundRectF,
-            backgroundState.raddi,
+            background.raddi,
             Path.Direction.CW
         )
 
         invalidate()
     }
 
-    override fun bindBlockList(list: List<GameAreaItem.CellState>) {
-        cellStateList = list
+    override fun bindBlockList(list: List<GameAreaItem.Block>) {
+        blockList = list
         invalidate()
     }
 }

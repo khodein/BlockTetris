@@ -1,45 +1,49 @@
 package com.gg.tetris.block.app.game
 
+import android.content.ClipData
+import android.content.ClipDescription
 import android.view.DragEvent
 import android.view.View
+import android.view.View.DRAG_FLAG_OPAQUE
 import android.view.View.OnDragListener
 import androidx.lifecycle.ViewModel
-import com.gg.tetris.block.app.game.mapper.GameAreaUiMapper
+import com.gg.tetris.block.app.game.builders.GameFigureDragShadowBuilder
+import com.gg.tetris.block.app.game.command.figure_command.FigureCommandDelegate
+import com.gg.tetris.block.app.game.mapper.GameAreaMapper
 import com.gg.tetris.block.app.game.mapper.GameCoordinateMapper
 import com.gg.tetris.block.app.game.mapper.GameRandomizerMapper
-import com.gg.tetris.block.app.game.mapper.GameRefreshBlocksUiMapper
-import com.gg.tetris.block.app.game.mapper.figure_mapper.FigureUiMapper
-import com.gg.tetris.block.app.game.states.GameCoordinateState
-import com.gg.tetris.block.app.game.states.GameFigureState
-import com.gg.tetris.block.app.game.states.GameState
+import com.gg.tetris.block.app.game.mapper.GameRefreshMapper
+import com.gg.tetris.block.app.game.states.game.GameCoordinateState
+import com.gg.tetris.block.app.game.states.game.GameFigureState
+import com.gg.tetris.block.app.game.states.game.GameState
 import com.gg.tetris.block.app.game.view.area.GameAreaItem
-import com.gg.tetris.block.app.game.view.container_block.GameContainerBlockItem
+import com.gg.tetris.block.app.game.view.container_figure.ContainerFigureItem
 import com.gg.tetris.block.app.game.view.refresh.GameRefreshItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class GameViewModel(
-    private val gameAreaUiMapper: GameAreaUiMapper,
-    private val gameRefreshBlocksUiMapper: GameRefreshBlocksUiMapper,
+    private val gameAreaMapper: GameAreaMapper,
+    private val gameRefreshMapper: GameRefreshMapper,
     private val gameRandomizerMapper: GameRandomizerMapper,
     private val gameCoordinateMapper: GameCoordinateMapper,
-    private val figureUiMapper: FigureUiMapper,
-) : ViewModel(), OnDragListener {
+    private val figureCommandDelegate: FigureCommandDelegate,
+) : ViewModel(), OnDragListener, ContainerFigureItem.Provider {
 
-    private val _cellListFlow = MutableStateFlow<List<GameAreaItem.CellState>>(emptyList())
-    val cellListFlow = _cellListFlow.asStateFlow()
+    private val _blocksFlow = MutableStateFlow<List<GameAreaItem.Block>>(emptyList())
+    val blocksFlow = _blocksFlow.asStateFlow()
 
-    private val _backgroundStateGameAreaFlow = MutableStateFlow<GameAreaItem.BackgroundState?>(null)
-    val backgroundGameAreaFlow = _backgroundStateGameAreaFlow.asStateFlow()
+    private val _backgroundAreaFlow = MutableStateFlow<GameAreaItem.Background?>(null)
+    val backgroundAreaFlow = _backgroundAreaFlow.asStateFlow()
 
-    private val _leftContainerBlockFlow = MutableStateFlow<GameContainerBlockItem.State?>(null)
-    val leftContainerBlockFlow = _leftContainerBlockFlow.asStateFlow()
+    private val _leftContainerFigureFlow = MutableStateFlow<ContainerFigureItem.State?>(null)
+    val leftContainerFigureFlow = _leftContainerFigureFlow.asStateFlow()
 
-    private val _centerContainerBlockFlow = MutableStateFlow<GameContainerBlockItem.State?>(null)
-    val centerContainerBlockFlow = _centerContainerBlockFlow.asStateFlow()
+    private val _centerContainerFigureFlow = MutableStateFlow<ContainerFigureItem.State?>(null)
+    val centerContainerFigureFlow = _centerContainerFigureFlow.asStateFlow()
 
-    private val _rightContainerBlockFlow = MutableStateFlow<GameContainerBlockItem.State?>(null)
-    val rightContainerBlockFlow = _rightContainerBlockFlow.asStateFlow()
+    private val _rightContainerFigureFlow = MutableStateFlow<ContainerFigureItem.State?>(null)
+    val rightContainerFigureFlow = _rightContainerFigureFlow.asStateFlow()
 
     private val _refreshBlocksFlow = MutableStateFlow<GameRefreshItem.State?>(null)
     val refreshBlocksFlow = _refreshBlocksFlow.asStateFlow()
@@ -51,33 +55,36 @@ class GameViewModel(
 
     private var gameList: List<GameState> = emptyList()
         set(value) {
-            _cellListFlow.value = gameAreaUiMapper.mapCellList(value)
+            _blocksFlow.value = gameAreaMapper.mapBlocksList(value)
             field = value
         }
 
     private var leftFigureState: GameFigureState = GameFigureState.EMPTY
         set(value) {
-            _leftContainerBlockFlow.value = GameContainerBlockItem.State(
-                tag = GameContainerBlockItem.Tag.LEFT,
-                figureBlockState = figureUiMapper.map(value)
+            _leftContainerFigureFlow.value = ContainerFigureItem.State(
+                tag = ContainerFigureItem.Tag.LEFT,
+                figureState = figureCommandDelegate.mapState(value),
+                provider = this
             )
             field = value
         }
 
     private var centerFigureState: GameFigureState = GameFigureState.EMPTY
         set(value) {
-            _centerContainerBlockFlow.value = GameContainerBlockItem.State(
-                tag = GameContainerBlockItem.Tag.CENTER,
-                figureBlockState = figureUiMapper.map(value)
+            _centerContainerFigureFlow.value = ContainerFigureItem.State(
+                tag = ContainerFigureItem.Tag.CENTER,
+                figureState = figureCommandDelegate.mapState(value),
+                provider = this,
             )
             field = value
         }
 
     private var rightFigureState: GameFigureState = GameFigureState.EMPTY
         set(value) {
-            _rightContainerBlockFlow.value = GameContainerBlockItem.State(
-                tag = GameContainerBlockItem.Tag.RIGHT,
-                figureBlockState = figureUiMapper.map(value)
+            _rightContainerFigureFlow.value = ContainerFigureItem.State(
+                tag = ContainerFigureItem.Tag.RIGHT,
+                figureState = figureCommandDelegate.mapState(value),
+                provider = this
             )
             field = value
         }
@@ -93,45 +100,67 @@ class GameViewModel(
     private fun updateCoordinateState() {
         gameCoordinateMapper.map().let { coordinate ->
             _coordinateStateFlow.value = coordinate
-            gameList = gameAreaUiMapper.mapGameState(coordinate.areaCoordinate)
+            gameList = gameAreaMapper.mapGameState(coordinate.areaCoordinate)
         }
     }
 
     private fun updateBackgroundStateGameArea() {
-        _backgroundStateGameAreaFlow.value = gameAreaUiMapper.mapBackgroundAreaState()
+        _backgroundAreaFlow.value = gameAreaMapper.mapAreaBackground()
     }
 
     private fun updateRefreshState() {
-        _refreshBlocksFlow.value = gameRefreshBlocksUiMapper.map(
+        _refreshBlocksFlow.value = gameRefreshMapper.map(
             count = 2,
             onClickRefresh = ::refreshBlocks
         )
     }
 
+    private fun refreshBlocksAllEmpty() {
+        if (
+            leftFigureState == GameFigureState.EMPTY &&
+            centerFigureState == GameFigureState.EMPTY &&
+            rightFigureState == GameFigureState.EMPTY
+        ) {
+            refreshBlocks()
+        }
+    }
+
     private fun refreshBlocks() {
         gameRandomizerMapper.getRandomFigure().forEachIndexed { index, figure ->
             when (index) {
-                0 -> leftFigureState = GameFigureState(
-                    colorState = figure.colorState,
-                    figureState = figure.figureState,
-                )
+                0 -> {
+                    if (leftFigureState == GameFigureState.EMPTY) {
+                        leftFigureState = GameFigureState(
+                            colorState = figure.colorState,
+                            figureState = figure.figureState,
+                        )
+                    }
+                }
 
-                1 -> centerFigureState = GameFigureState(
-                    colorState = figure.colorState,
-                    figureState = figure.figureState,
-                )
+                1 -> {
+                    if (centerFigureState == GameFigureState.EMPTY) {
+                        centerFigureState = GameFigureState(
+                            colorState = figure.colorState,
+                            figureState = figure.figureState,
+                        )
+                    }
+                }
 
-                2 -> rightFigureState = GameFigureState(
-                    colorState = figure.colorState,
-                    figureState = figure.figureState,
-                )
+                2 -> {
+                    if (rightFigureState == GameFigureState.EMPTY) {
+                        rightFigureState = GameFigureState(
+                            colorState = figure.colorState,
+                            figureState = figure.figureState,
+                        )
+                    }
+                }
             }
         }
     }
 
     override fun onDrag(view: View?, event: DragEvent?): Boolean {
         val figureTag = event?.clipDescription?.label?.let {
-            GameContainerBlockItem.Tag.valueOf(it.toString())
+            ContainerFigureItem.Tag.valueOf(it.toString())
         }
 
         when (event?.action) {
@@ -143,7 +172,7 @@ class GameViewModel(
                     return false
                 }
 
-                val rectFigureState = figureUiMapper.mapRectFigureState(
+                val rectFigureState = figureCommandDelegate.mapRectFigureState(
                     eventX = event.x,
                     eventY = event.y,
                     gameFigureState = dragFigureState
@@ -168,6 +197,8 @@ class GameViewModel(
                 gameList = list
 
                 dragFigureState = GameFigureState.EMPTY
+
+                refreshBlocksAllEmpty()
             }
 
             DragEvent.ACTION_DRAG_LOCATION -> {
@@ -186,22 +217,22 @@ class GameViewModel(
     }
 
     private fun onDragStarted(
-        figureTag: GameContainerBlockItem.Tag?
+        figureTag: ContainerFigureItem.Tag?
     ) {
         dragFigureState = when (figureTag) {
-            GameContainerBlockItem.Tag.LEFT -> {
+            ContainerFigureItem.Tag.LEFT -> {
                 val state = leftFigureState
                 leftFigureState = GameFigureState.EMPTY
                 state
             }
 
-            GameContainerBlockItem.Tag.CENTER -> {
+            ContainerFigureItem.Tag.CENTER -> {
                 val state = centerFigureState
                 centerFigureState = GameFigureState.EMPTY
                 state
             }
 
-            GameContainerBlockItem.Tag.RIGHT -> {
+            ContainerFigureItem.Tag.RIGHT -> {
                 val state = rightFigureState
                 rightFigureState = GameFigureState.EMPTY
                 state
@@ -221,5 +252,37 @@ class GameViewModel(
         bottom: Float
     ): Boolean {
         return touchX in left..right && touchY in top..bottom
+    }
+
+    override fun dragAndDrop(
+        tag: ContainerFigureItem.Tag,
+        figureWidth: Int,
+        figureHeight: Int,
+        originalTouchX: Int,
+        originalTouchY: Int,
+        figureView: View
+    ) {
+        val figureShadow = GameFigureDragShadowBuilder(
+            view = figureView,
+            width = figureWidth,
+            height = figureHeight,
+            originalTouchX = originalTouchX,
+            originalTouchY = originalTouchY,
+        )
+
+        val figureClipItem = ClipData.Item(tag.name as? CharSequence)
+
+        val figureClipData = ClipData(
+            tag.name as? CharSequence,
+            arrayOf(ClipDescription.MIMETYPE_TEXT_PLAIN),
+            figureClipItem
+        )
+
+        figureView.startDragAndDrop(
+            figureClipData,
+            figureShadow,
+            figureView,
+            DRAG_FLAG_OPAQUE,
+        )
     }
 }

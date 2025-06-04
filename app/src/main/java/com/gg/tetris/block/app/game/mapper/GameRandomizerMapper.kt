@@ -1,8 +1,8 @@
 package com.gg.tetris.block.app.game.mapper
 
-import com.gg.tetris.block.app.game.states.ColorState
-import com.gg.tetris.block.app.game.states.FigureState
-import com.gg.tetris.block.app.game.states.GameFigure
+import com.gg.tetris.block.app.game.states.color.ColorState
+import com.gg.tetris.block.app.game.states.figure.FigureState
+import com.gg.tetris.block.app.game.states.game.GameFigureState
 
 class GameRandomizerMapper {
 
@@ -20,7 +20,7 @@ class GameRandomizerMapper {
         }
     }
 
-    fun getRandomFigure(): List<GameFigure> {
+    fun getRandomFigure(): List<GameFigureState> {
         val selectedFigures = randomFigureMap.entries
             .sortedBy { it.value }
             .distinctBy { it.key }
@@ -38,12 +38,7 @@ class GameRandomizerMapper {
                 randomFigureMap[figure.ownerId] = (randomFigureMap[figure.ownerId] ?: 0) + 1
                 randomColorMap[color] = (randomColorMap[color] ?: 0) + 1
 
-                RandomFigure(figure, color)
+                GameFigureState(figure, color)
             }
     }
-
-    private data class RandomFigure(
-        override val figureState: FigureState,
-        override val colorState: ColorState
-    ) : GameFigure
 }

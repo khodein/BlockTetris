@@ -6,15 +6,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.gg.tetris.block.app.databinding.ActivityMainBinding
-import com.gg.tetris.block.app.router.Router
+import com.gg.tetris.block.app.managers.RouterManager
 import com.gg.tetris.block.app.utils.setLightNavigationAndStatusBars
 import org.koin.android.ext.android.inject
 import org.koin.androidx.fragment.android.setupKoinFragmentFactory
 
-class MainActivity : AppCompatActivity(), Router.Provider {
+class MainActivity : AppCompatActivity(), RouterManager.Provider {
 
     private val binding: ActivityMainBinding by lazy { ActivityMainBinding.inflate(layoutInflater) }
-    private val router by inject<Router>()
+    private val routerManager by inject<RouterManager>()
 
     private val navHostFragment by lazy {
         supportFragmentManager.findFragmentById(binding.navHostMain.id) as NavHostFragment
@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity(), Router.Provider {
             isAppearanceLightNavigationBars = false,
             isAppearanceLightStatusBars = false
         )
-        navController.graph = router.createGraph(this)
+        navController.graph = routerManager.createGraph(this)
     }
 
     override fun getRouterNavController(): NavController {

@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:visibility="gone">
 
-            <com.gg.tetris.block.app.game.view.container_block.GameContainerBlockItemView
+            <com.gg.tetris.block.app.game.view.container_figure.ContainerFigureItemView
                 android:id="@+id/blockLeftGame"
                 android:layout_width="104dp"
                 android:layout_height="104dp"
@@ -32,7 +32,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <com.gg.tetris.block.app.game.view.container_block.GameContainerBlockItemView
+            <com.gg.tetris.block.app.game.view.container_figure.ContainerFigureItemView
                 android:id="@+id/blockCenterGame"
                 android:layout_width="104dp"
                 android:layout_height="104dp"
@@ -42,7 +42,7 @@
                 app:layout_constraintStart_toEndOf="@+id/blockLeftGame"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <com.gg.tetris.block.app.game.view.container_block.GameContainerBlockItemView
+            <com.gg.tetris.block.app.game.view.container_figure.ContainerFigureItemView
                 android:id="@+id/blockRightGame"
                 android:layout_width="104dp"
                 android:layout_height="104dp"
