@@ -1,7 +1,9 @@
 package com.gg.tetris.block.app.game.command.figure_command.z_command
 
 import com.gg.tetris.block.app.game.command.figure_command.FigureCommand
+import com.gg.tetris.block.app.game.command.figure_command.FigureCommand.PolygonProvider
 import com.gg.tetris.block.app.game.states.figure.FigureState
+import com.gg.tetris.block.app.game.states.polygon.PolygonState
 import com.gg.tetris.block.app.game.view.figure.FigureItem
 
 class FigureZR0Command : FigureCommand {
@@ -10,6 +12,12 @@ class FigureZR0Command : FigureCommand {
         provider: FigureCommand.ItemProvider,
     ): FigureItem.State {
         return zR0(provider = provider)
+    }
+
+    override fun getPolygonsState(
+        provider: PolygonProvider
+    ): List<PolygonState> {
+        return emptyList()
     }
 
     override fun isRequired(state: FigureState): Boolean {

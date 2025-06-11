@@ -2,6 +2,7 @@ package com.gg.tetris.block.app.game.view.area
 
 import android.graphics.Bitmap
 import androidx.annotation.ColorInt
+import com.gg.tetris.block.app.game.GameParams
 import com.gg.tetris.block.app.game.states.owner.OwnerState
 
 class GameAreaItem {
@@ -48,5 +49,11 @@ class GameAreaItem {
         val bitmap: Bitmap?,
         val left: Float,
         val top: Float,
-    )
+    ) {
+        val centerX: Float
+            get() = left + GameParams.BLOCK_SIZE / 2f
+
+        val centerY: Float
+            get() = top + GameParams.BLOCK_SIZE / 2f
+    }
 }

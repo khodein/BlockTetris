@@ -13,9 +13,12 @@ import com.gg.tetris.block.app.game.mapper.GameAreaMapper
 import com.gg.tetris.block.app.game.mapper.GameCoordinateMapper
 import com.gg.tetris.block.app.game.mapper.GameRandomizerMapper
 import com.gg.tetris.block.app.game.mapper.GameRefreshMapper
+import com.gg.tetris.block.app.game.states.coordinate.CoordinateState
+import com.gg.tetris.block.app.game.states.figure.FigureState
 import com.gg.tetris.block.app.game.states.game.GameCoordinateState
 import com.gg.tetris.block.app.game.states.game.GameFigureState
 import com.gg.tetris.block.app.game.states.game.GameState
+import com.gg.tetris.block.app.game.states.polygon.PolygonState
 import com.gg.tetris.block.app.game.view.area.GameAreaItem
 import com.gg.tetris.block.app.game.view.container_figure.ContainerFigureItem
 import com.gg.tetris.block.app.game.view.refresh.GameRefreshItem
@@ -51,11 +54,21 @@ class GameViewModel(
     private val _coordinateStateFlow = MutableStateFlow<GameCoordinateState?>(null)
     val coordinateStateFlow = _coordinateStateFlow.asStateFlow()
 
+    private val _gameListFlow = MutableStateFlow<List<GameState>>(emptyList())
+    val gameListFlow = _gameListFlow.asStateFlow()
+
+    private val _gameTestFigureFlow = MutableStateFlow<CoordinateState?>(null)
+    val gameTestFigureFlow = _gameTestFigureFlow.asStateFlow()
+
+    private val _gameTestPolygonsFigureFlow = MutableStateFlow<List<PolygonState>>(emptyList())
+    val gameTestPolygonsFigureFlow = _gameTestPolygonsFigureFlow.asStateFlow()
+
     private var dragFigureState: GameFigureState = GameFigureState.EMPTY
 
     private var gameList: List<GameState> = emptyList()
         set(value) {
             _blocksFlow.value = gameAreaMapper.mapBlocksList(value)
+            _gameListFlow.value = value
             field = value
         }
 
@@ -129,30 +142,24 @@ class GameViewModel(
         gameRandomizerMapper.getRandomFigure().forEachIndexed { index, figure ->
             when (index) {
                 0 -> {
-                    if (leftFigureState == GameFigureState.EMPTY) {
-                        leftFigureState = GameFigureState(
-                            colorState = figure.colorState,
-                            figureState = figure.figureState,
-                        )
-                    }
+                    leftFigureState = GameFigureState(
+                        colorState = figure.colorState,
+                        figureState = FigureState.I.V,
+                    )
                 }
 
                 1 -> {
-                    if (centerFigureState == GameFigureState.EMPTY) {
-                        centerFigureState = GameFigureState(
-                            colorState = figure.colorState,
-                            figureState = figure.figureState,
-                        )
-                    }
+                    centerFigureState = GameFigureState(
+                        colorState = figure.colorState,
+                        figureState = FigureState.J.R180,
+                    )
                 }
 
                 2 -> {
-                    if (rightFigureState == GameFigureState.EMPTY) {
-                        rightFigureState = GameFigureState(
-                            colorState = figure.colorState,
-                            figureState = figure.figureState,
-                        )
-                    }
+                    rightFigureState = GameFigureState(
+                        colorState = figure.colorState,
+                        figureState = FigureState.J.R0,
+                    )
                 }
             }
         }
@@ -172,33 +179,59 @@ class GameViewModel(
                     return false
                 }
 
-                val rectFigureState = figureCommandDelegate.mapRectFigureState(
-                    eventX = event.x,
-                    eventY = event.y,
-                    gameFigureState = dragFigureState
+                val figureState = figureCommandDelegate.mapState(dragFigureState)
+                val originalHeight = figureState.originalState.height
+                val originalWidth = figureState.originalState.width
+                val offsetX = figureState.originalTouchX - (originalWidth / 2f)
+                val offsetY = figureState.originalTouchY - (originalHeight / 2f)
+
+                val centerX = event.x - offsetX
+                val centerY = event.y - offsetY
+
+                _gameTestFigureFlow.value = CoordinateState(
+                    x = centerX,
+                    y = centerY
                 )
 
-                val match = gameList.filter { gameState ->
-                    isPointInsideObject(
-                        touchX = gameState.coordinate.x,
-                        touchY = gameState.coordinate.y,
-                        left = rectFigureState.left,
-                        top = rectFigureState.top,
-                        right = rectFigureState.right,
-                        bottom = rectFigureState.bottom
-                    )
+                val polygons = figureCommandDelegate.mapPolygonsState(
+                    eventY = event.y,
+                    eventX = event.x,
+                    state = dragFigureState
+                )
+
+                val polygonsSize = polygons.size
+
+                _gameTestPolygonsFigureFlow.value = polygons
+
+                val matchList = mutableListOf<GameState>()
+                gameList.forEach { game ->
+                    polygons.forEach { polygon ->
+                        val isMatch = polygon.contains(
+                            x = game.point.x,
+                            y = game.point.y
+                        )
+                        if (isMatch) {
+                            matchList.add(game)
+                        }
+                    }
                 }
 
-                var list = gameList.toMutableList()
-                match.forEach { gameState ->
-                    val index = list.indexOf(gameState)
-                    list[index] = gameState.copy(colorState = dragFigureState.colorState)
+                val matchSize = matchList.size
+
+                if (polygonsSize == matchSize) {
+                    var list = gameList.toMutableList()
+                    matchList.forEach { gameState ->
+                        val index = list.indexOf(gameState)
+                        list[index] = gameState.copy(colorState = dragFigureState.colorState)
+                    }
+                    gameList = list
+
+                    dragFigureState = GameFigureState.EMPTY
+
+                    refreshBlocksAllEmpty()
+                } else {
+                    onDragFailed(figureTag)
                 }
-                gameList = list
-
-                dragFigureState = GameFigureState.EMPTY
-
-                refreshBlocksAllEmpty()
             }
 
             DragEvent.ACTION_DRAG_LOCATION -> {
@@ -214,6 +247,29 @@ class GameViewModel(
             }
         }
         return true
+    }
+
+    private fun onDragFailed(
+        figureTag: ContainerFigureItem.Tag?
+    ) {
+        when (figureTag) {
+            ContainerFigureItem.Tag.LEFT -> {
+                leftFigureState = dragFigureState
+            }
+
+            ContainerFigureItem.Tag.CENTER -> {
+                centerFigureState = dragFigureState
+            }
+
+            ContainerFigureItem.Tag.RIGHT -> {
+                rightFigureState = dragFigureState
+
+            }
+
+            else -> Unit
+        }
+
+        dragFigureState = GameFigureState.EMPTY
     }
 
     private fun onDragStarted(
@@ -241,17 +297,6 @@ class GameViewModel(
 
             else -> GameFigureState.EMPTY
         }
-    }
-
-    private fun isPointInsideObject(
-        touchX: Float,
-        touchY: Float,
-        left: Float,
-        right: Float,
-        top: Float,
-        bottom: Float
-    ): Boolean {
-        return touchX in left..right && touchY in top..bottom
     }
 
     override fun dragAndDrop(

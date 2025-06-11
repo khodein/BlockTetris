@@ -8,14 +8,35 @@ sealed interface FigureState {
     }
 
     sealed class I(override val ownerId: String) : FigureState {
+
+        // .
+        // .
+        // .
+        // .
         data object V : I(ownerId = "IV")
+
+        // . . . .
         data object H : I(ownerId = "IH")
     }
 
     sealed class J(override val ownerId: String) : FigureState {
+
+        // .
+        // . . .
         data object R0 : J(ownerId = "JR0")
+
+        //  .
+        //  .
+        //. .
         data object R90 : J(ownerId = "JR90")
+
+        // . . .
+        //     .
         data object R180 : J(ownerId = "JR180")
+
+        // . .
+        // .
+        // .
         data object R270 : J(ownerId = "JR270")
     }
 
@@ -48,26 +69,27 @@ sealed interface FigureState {
     }
 
     companion object {
-        val all = listOf(
-            I.H,
-            I.V,
-            J.R0,
-            J.R90,
-            J.R180,
-            J.R270,
-            L.R0,
-            L.R90,
-            L.R180,
-            L.R270,
-            O.X2X2,
-            S.R0,
-            S.R90,
-            Z.R0,
-            Z.R90,
-            T.R0,
-            T.R90,
-            T.R180,
-            T.R270,
-        )
+        val entries: List<FigureState>
+            get() = listOf(
+                I.H,
+                I.V,
+                J.R0,
+                J.R90,
+                J.R180,
+                J.R270,
+                L.R0,
+                L.R90,
+                L.R180,
+                L.R270,
+                O.X2X2,
+                S.R0,
+                S.R90,
+                Z.R0,
+                Z.R90,
+                T.R0,
+                T.R90,
+                T.R180,
+                T.R270,
+            )
     }
 }

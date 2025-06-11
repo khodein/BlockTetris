@@ -27,6 +27,7 @@ import com.gg.tetris.block.app.game.mapper.GameBitmapMapper
 import com.gg.tetris.block.app.game.mapper.GameCoordinateMapper
 import com.gg.tetris.block.app.game.mapper.GameRandomizerMapper
 import com.gg.tetris.block.app.game.mapper.GameRefreshMapper
+import com.gg.tetris.block.app.game.states.figure.FigureState
 import com.gg.tetris.block.app.utils.dp
 import org.koin.androidx.fragment.dsl.fragmentOf
 import org.koin.core.module.dsl.factoryOf
@@ -40,33 +41,41 @@ val gameModule = module {
 
     factory {
         val commands = buildList<FigureCommand> {
-            add(FigureNoneCommand())
+            val newListEntries = FigureState.entries.toMutableList()
+            newListEntries.add(FigureState.None)
 
-            add(FigureIHCommand())
-            add(FigureIVCommand())
+            newListEntries.forEach {
+                val command = when (it) {
+                    is FigureState.None -> FigureNoneCommand()
+                    is FigureState.I.H -> FigureIHCommand()
+                    is FigureState.I.V -> FigureIVCommand()
 
-            add(FigureJR0Command())
-            add(FigureJR90Command())
-            add(FigureJR180Command())
-            add(FigureJR270Command())
+                    is FigureState.J.R0 -> FigureJR0Command()
+                    is FigureState.J.R90 -> FigureJR90Command()
+                    is FigureState.J.R180 -> FigureJR180Command()
+                    is FigureState.J.R270 -> FigureJR270Command()
 
-            add(FigureLR0Command())
-            add(FigureLR90Command())
-            add(FigureLR180Command())
-            add(FigureLR270Command())
+                    is FigureState.L.R0 -> FigureLR0Command()
+                    is FigureState.L.R90 -> FigureLR90Command()
+                    is FigureState.L.R180 -> FigureLR180Command()
+                    is FigureState.L.R270 -> FigureLR270Command()
 
-            add(FigureO2X2Command())
+                    is FigureState.O.X2X2 -> FigureO2X2Command()
 
-            add(FigureSR0Command())
-            add(FigureSR90Command())
+                    is FigureState.S.R0 -> FigureSR0Command()
+                    is FigureState.S.R90 -> FigureSR90Command()
 
-            add(FigureTR0Command())
-            add(FigureTR90Command())
-            add(FigureTR180Command())
-            add(FigureTR270Command())
+                    is FigureState.T.R0 -> FigureTR0Command()
+                    is FigureState.T.R90 -> FigureTR90Command()
+                    is FigureState.T.R180 -> FigureTR180Command()
+                    is FigureState.T.R270 -> FigureTR270Command()
 
-            add(FigureZR0Command())
-            add(FigureZR90Command())
+                    is FigureState.Z.R0 -> FigureZR0Command()
+                    is FigureState.Z.R90 -> FigureZR90Command()
+                }
+
+                add(command)
+            }
         }
         FigureCommandDelegate(
             gameBitmapMapper = get<GameBitmapMapper>(),

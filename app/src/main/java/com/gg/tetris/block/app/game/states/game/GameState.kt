@@ -7,5 +7,5 @@ import com.gg.tetris.block.app.game.states.owner.OwnerState
 data class GameState(
     val ownerState: OwnerState,
     val colorState: ColorState,
-    val coordinate: CoordinateState,
+    val point: CoordinateState,
 )

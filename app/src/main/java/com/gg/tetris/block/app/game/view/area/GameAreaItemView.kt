@@ -98,7 +98,7 @@ class GameAreaItemView @JvmOverloads constructor(
             Path.Direction.CW
         )
 
-        invalidate()
+        requestLayout()
     }
 
     override fun bindBlockList(list: List<GameAreaItem.Block>) {

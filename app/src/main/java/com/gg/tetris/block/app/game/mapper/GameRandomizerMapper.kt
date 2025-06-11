@@ -15,7 +15,7 @@ class GameRandomizerMapper {
             randomColorMap[it] = 0
         }
 
-        FigureState.Companion.all.forEach {
+        FigureState.Companion.entries.forEach {
             randomFigureMap[it.ownerId] = 0
         }
     }
@@ -25,7 +25,7 @@ class GameRandomizerMapper {
             .sortedBy { it.value }
             .distinctBy { it.key }
             .map { entry ->
-                FigureState.Companion.all.first { it.ownerId == entry.key }
+                FigureState.Companion.entries.first { it.ownerId == entry.key }
             }
 
         val selectedColors = randomColorMap.entries

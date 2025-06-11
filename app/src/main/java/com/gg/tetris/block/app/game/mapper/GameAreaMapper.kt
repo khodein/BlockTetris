@@ -38,7 +38,7 @@ class GameAreaMapper(
         return OwnerState.areaOwnerListState.map {
             val state = GameState(
                 ownerState = it,
-                coordinate = CoordinateState(
+                point = CoordinateState(
                     x = screenX,
                     y = screenY
                 ),
