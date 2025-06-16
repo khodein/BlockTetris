@@ -80,8 +80,8 @@ class ContainerFigureItemView @JvmOverloads constructor(
         state: FigureItem.State,
         tag: ContainerFigureItem.Tag
     ) = Runnable {
-        this.state?.provider?.dragAndDrop(
-            figureView = figureView,
+        this.state?.provider?.onDragAndDrop(
+            view = figureView,
             tag = tag,
             figureWidth = state.originalState.width,
             figureHeight = state.originalState.height,

@@ -15,13 +15,13 @@ class ContainerFigureItem {
     )
 
     interface Provider {
-        fun dragAndDrop(
+        fun onDragAndDrop(
             tag: Tag,
             figureWidth: Int,
             figureHeight: Int,
             originalTouchX: Int,
             originalTouchY: Int,
-            figureView: android.view.View,
+            view: android.view.View,
         )
     }
 

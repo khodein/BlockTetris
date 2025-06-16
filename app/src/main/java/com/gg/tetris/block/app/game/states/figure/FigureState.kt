@@ -41,9 +41,20 @@ sealed interface FigureState {
     }
 
     sealed class L(override val ownerId: String) : FigureState {
+
+        //     .
+        // . . .
         data object R0 : L(ownerId = "LR0")
+
+        // . .
+        //   .
+        //   .
         data object R90 : L(ownerId = "LR90")
+
+        // . . .
+        // .
         data object R180 : L(ownerId = "LR180")
+
         data object R270 : L(ownerId = "LR270")
     }
 

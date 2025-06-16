@@ -13,10 +13,6 @@ class FigureJR0Command : FigureCommand {
 
     override fun getState(
         provider: FigureCommand.ItemProvider,
-    ): FigureItem.State = mapState(provider = provider)
-
-    private fun mapState(
-        provider: FigureCommand.ItemProvider
     ): FigureItem.State {
         val containerBlocks = mutableListOf<FigureItem.Block>()
         val originalBlocks = mutableListOf<FigureItem.Block>()
@@ -94,12 +90,6 @@ class FigureJR0Command : FigureCommand {
             startY = centerY - halfHeight
         )
 
-        return mapPolygonsState(config)
-    }
-
-    private fun mapPolygonsState(
-        config: FigureCommand.PolygonConfig
-    ): List<PolygonState> {
         val firstPolygon = getFirstPolygon(config)
         val secondPolygon = getSecondPolygon(config)
         val thirdPolygon = getThirdPolygon(config)
@@ -167,7 +157,6 @@ class FigureJR0Command : FigureCommand {
         val topY = config.startY + config.cellSize + config.padding
         val rightX = config.startX + config.cellSize - config.padding
         val bottomY = config.startY + config.cellSize * 2
-
         return PolygonState(
             topLeft = CoordinateState(
                 x = config.startX,
@@ -193,7 +182,6 @@ class FigureJR0Command : FigureCommand {
     ): PolygonState {
         val rightX = config.startX + config.cellSize - config.padding
         val bottomY = config.startY + config.cellSize - config.padding
-
         return PolygonState(
             topLeft = CoordinateState(
                 x = config.startX,

@@ -144,21 +144,21 @@ class GameViewModel(
                 0 -> {
                     leftFigureState = GameFigureState(
                         colorState = figure.colorState,
-                        figureState = FigureState.I.V,
+                        figureState = FigureState.O.X2X2,
                     )
                 }
 
                 1 -> {
                     centerFigureState = GameFigureState(
                         colorState = figure.colorState,
-                        figureState = FigureState.J.R180,
+                        figureState = FigureState.L.R90,
                     )
                 }
 
                 2 -> {
                     rightFigureState = GameFigureState(
                         colorState = figure.colorState,
-                        figureState = FigureState.J.R0,
+                        figureState = FigureState.L.R270,
                     )
                 }
             }
@@ -299,16 +299,16 @@ class GameViewModel(
         }
     }
 
-    override fun dragAndDrop(
+    override fun onDragAndDrop(
         tag: ContainerFigureItem.Tag,
         figureWidth: Int,
         figureHeight: Int,
         originalTouchX: Int,
         originalTouchY: Int,
-        figureView: View
+        view: View
     ) {
         val figureShadow = GameFigureDragShadowBuilder(
-            view = figureView,
+            view = view,
             width = figureWidth,
             height = figureHeight,
             originalTouchX = originalTouchX,
@@ -323,10 +323,10 @@ class GameViewModel(
             figureClipItem
         )
 
-        figureView.startDragAndDrop(
+        view.startDragAndDrop(
             figureClipData,
             figureShadow,
-            figureView,
+            view,
             DRAG_FLAG_OPAQUE,
         )
     }

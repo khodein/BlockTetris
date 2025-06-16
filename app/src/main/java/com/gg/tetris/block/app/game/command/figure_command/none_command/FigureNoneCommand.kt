@@ -10,17 +10,11 @@ class FigureNoneCommand : FigureCommand {
 
     override fun getState(
         provider: FigureCommand.ItemProvider
-    ): FigureItem.State {
-        return FigureItem.EMPTY
-    }
+    ): FigureItem.State = FigureItem.EMPTY
 
     override fun getPolygonsState(
         provider: PolygonProvider
-    ): List<PolygonState> {
-        return emptyList()
-    }
+    ): List<PolygonState> = emptyList()
 
-    override fun isRequired(state: FigureState): Boolean {
-        return state is FigureState.None
-    }
+    override fun isRequired(state: FigureState) = state is FigureState.None
 }
