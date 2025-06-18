@@ -80,6 +80,10 @@ class ContainerFigureItemView @JvmOverloads constructor(
         state: FigureItem.State,
         tag: ContainerFigureItem.Tag
     ) = Runnable {
+        if (state == FigureItem.EMPTY) {
+            return@Runnable
+        }
+
         this.state?.provider?.onDragAndDrop(
             view = figureView,
             tag = tag,

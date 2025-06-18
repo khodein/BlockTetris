@@ -14,7 +14,6 @@ import com.gg.tetris.block.app.game.mapper.GameCoordinateMapper
 import com.gg.tetris.block.app.game.mapper.GameRandomizerMapper
 import com.gg.tetris.block.app.game.mapper.GameRefreshMapper
 import com.gg.tetris.block.app.game.states.coordinate.CoordinateState
-import com.gg.tetris.block.app.game.states.figure.FigureState
 import com.gg.tetris.block.app.game.states.game.GameCoordinateState
 import com.gg.tetris.block.app.game.states.game.GameFigureState
 import com.gg.tetris.block.app.game.states.game.GameState
@@ -139,30 +138,21 @@ class GameViewModel(
     }
 
     private fun refreshBlocks() {
-        gameRandomizerMapper.getRandomFigure().forEachIndexed { index, figure ->
-            when (index) {
-                0 -> {
-                    leftFigureState = GameFigureState(
-                        colorState = figure.colorState,
-                        figureState = FigureState.O.X2X2,
-                    )
-                }
+        refreshLeftFigure()
+        refreshCenterFigure()
+        refreshRightFigure()
+    }
 
-                1 -> {
-                    centerFigureState = GameFigureState(
-                        colorState = figure.colorState,
-                        figureState = FigureState.L.R90,
-                    )
-                }
+    private fun refreshLeftFigure() {
+        leftFigureState = gameRandomizerMapper.getRandomFigure()
+    }
 
-                2 -> {
-                    rightFigureState = GameFigureState(
-                        colorState = figure.colorState,
-                        figureState = FigureState.L.R270,
-                    )
-                }
-            }
-        }
+    private fun refreshCenterFigure() {
+        centerFigureState = gameRandomizerMapper.getRandomFigure()
+    }
+
+    private fun refreshRightFigure() {
+        rightFigureState = gameRandomizerMapper.getRandomFigure()
     }
 
     override fun onDrag(view: View?, event: DragEvent?): Boolean {
@@ -179,44 +169,22 @@ class GameViewModel(
                     return false
                 }
 
-                val figureState = figureCommandDelegate.mapState(dragFigureState)
-                val originalHeight = figureState.originalState.height
-                val originalWidth = figureState.originalState.width
-                val offsetX = figureState.originalTouchX - (originalWidth / 2f)
-                val offsetY = figureState.originalTouchY - (originalHeight / 2f)
-
-                val centerX = event.x - offsetX
-                val centerY = event.y - offsetY
-
-                _gameTestFigureFlow.value = CoordinateState(
-                    x = centerX,
-                    y = centerY
-                )
-
-                val polygons = figureCommandDelegate.mapPolygonsState(
-                    eventY = event.y,
+                val polygons = getPolygons(
                     eventX = event.x,
-                    state = dragFigureState
+                    eventY = event.y
                 )
 
-                val polygonsSize = polygons.size
-
-                _gameTestPolygonsFigureFlow.value = polygons
-
-                val matchList = mutableListOf<GameState>()
-                gameList.forEach { game ->
-                    polygons.forEach { polygon ->
-                        val isMatch = polygon.contains(
-                            x = game.point.x,
-                            y = game.point.y
-                        )
-                        if (isMatch) {
-                            matchList.add(game)
-                        }
-                    }
+                if (polygons.isEmpty()) {
+                    onDragFailed(figureTag)
+                    return false
                 }
 
+                val matchList = getMatchesList(
+                    gameList = gameList,
+                    polygons = polygons
+                )
                 val matchSize = matchList.size
+                val polygonsSize = polygons.size
 
                 if (polygonsSize == matchSize) {
                     var list = gameList.toMutableList()
@@ -231,6 +199,7 @@ class GameViewModel(
                     refreshBlocksAllEmpty()
                 } else {
                     onDragFailed(figureTag)
+                    return false
                 }
             }
 
@@ -239,7 +208,8 @@ class GameViewModel(
             }
 
             DragEvent.ACTION_DRAG_EXITED -> {
-
+                onDragFailed(figureTag)
+                return false
             }
 
             else -> {
@@ -247,6 +217,57 @@ class GameViewModel(
             }
         }
         return true
+    }
+
+    private fun getPolygons(
+        eventX: Float,
+        eventY: Float,
+    ): List<PolygonState> {
+        val figureState = figureCommandDelegate.mapState(dragFigureState)
+
+        val originalHeight = figureState.originalState.height
+        val originalWidth = figureState.originalState.width
+
+        val offsetX = figureState.originalTouchX - (originalWidth / 2f)
+        val offsetY = figureState.originalTouchY - (originalHeight / 2f)
+
+        val centerX = eventX - offsetX
+        val centerY = eventY - offsetY
+
+        _gameTestFigureFlow.value = CoordinateState(
+            x = centerX,
+            y = centerY
+        )
+
+        val polygons = figureCommandDelegate.mapPolygonsState(
+            eventY = eventY,
+            eventX = eventX,
+            state = dragFigureState,
+            figureState = figureState
+        )
+
+        _gameTestPolygonsFigureFlow.value = polygons
+
+        return polygons
+    }
+
+    private fun getMatchesList(
+        gameList: List<GameState>,
+        polygons: List<PolygonState>
+    ): List<GameState> {
+        return buildList {
+            gameList.forEach { game ->
+                polygons.forEach { polygon ->
+                    val isMatch = polygon.contains(
+                        x = game.point.x,
+                        y = game.point.y
+                    )
+                    if (isMatch) {
+                        add(game)
+                    }
+                }
+            }
+        }
     }
 
     private fun onDragFailed(

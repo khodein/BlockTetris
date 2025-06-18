@@ -1,6 +1,7 @@
 package com.gg.tetris.block.app.game.states.figure
 
 sealed interface FigureState {
+
     val ownerId: String
 
     data object None : FigureState {
@@ -55,27 +56,61 @@ sealed interface FigureState {
         // .
         data object R180 : L(ownerId = "LR180")
 
+        // .
+        // .
+        // . .
         data object R270 : L(ownerId = "LR270")
     }
 
     sealed class O(override val ownerId: String) : FigureState {
+
+        // . .
+        // . .
         data object X2X2 : O(ownerId = "O2X2")
     }
 
     sealed class S(override val ownerId: String) : FigureState {
+
+        //   . .
+        // . .
         data object R0 : S(ownerId = "SR0")
+
+        // .
+        // . .
+        //   .
         data object R90 : S(ownerId = "SR90")
     }
 
     sealed class Z(override val ownerId: String) : FigureState {
+
+        // . .
+        //   . .
         data object R0 : Z(ownerId = "ZR0")
+
+        //   .
+        // . .
+        // .
         data object R90 : Z(ownerId = "ZR90")
     }
 
     sealed class T(override val ownerId: String) : FigureState {
+
+        //   .
+        // . . .
         data object R0 : T(ownerId = "TR0")
+
+        //   .
+        // . .
+        //   .
         data object R90 : T(ownerId = "TR90")
+
+        // . . .
+        //   .
         data object R180 : T(ownerId = "TR180")
+
+        // .
+        // . .
+        // .
         data object R270 : T(ownerId = "TR270")
     }
 

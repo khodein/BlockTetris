@@ -26,7 +26,34 @@ data class PolygonState(
     val maxY: Float
         get() = maxOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y)
 
-    fun contains(x: Float, y: Float): Boolean {
-        return x in minX..maxX && y in minY..maxY
+    fun contains(
+        x: Float,
+        y: Float
+    ): Boolean = x in minX..maxX && y in minY..maxY
+
+    companion object {
+        fun mapTo(
+            leftX: Float,
+            rightX: Float,
+            topY: Float,
+            bottomY: Float,
+        ) = PolygonState(
+            topLeft = CoordinateState(
+                x = leftX,
+                y = topY,
+            ),
+            topRight = CoordinateState(
+                x = rightX,
+                y = topY,
+            ),
+            bottomLeft = CoordinateState(
+                x = leftX,
+                y = bottomY,
+            ),
+            bottomRight = CoordinateState(
+                x = rightX,
+                y = bottomY,
+            )
+        )
     }
 }

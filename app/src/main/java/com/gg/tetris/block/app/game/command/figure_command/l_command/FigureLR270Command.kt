@@ -1,17 +1,13 @@
 package com.gg.tetris.block.app.game.command.figure_command.l_command
 
 import com.gg.tetris.block.app.game.command.figure_command.FigureCommand
-import com.gg.tetris.block.app.game.command.figure_command.FigureCommand.PolygonProvider
-import com.gg.tetris.block.app.game.states.coordinate.CoordinateState
-import com.gg.tetris.block.app.game.states.figure.FigureState
+import com.gg.tetris.block.app.game.command.figure_command.FigureCommand.PolygonConfig
 import com.gg.tetris.block.app.game.states.polygon.PolygonState
 import com.gg.tetris.block.app.game.view.figure.FigureItem
 
 class FigureLR270Command : FigureCommand {
 
-    override fun isRequired(state: FigureState) = state is FigureState.L.R270
-
-    override fun getState(
+    override fun getFigureState(
         provider: FigureCommand.ItemProvider
     ): FigureItem.State {
         val containerBlocks = mutableListOf<FigureItem.Block>()
@@ -70,29 +66,8 @@ class FigureLR270Command : FigureCommand {
     }
 
     override fun getPolygonsState(
-        provider: PolygonProvider
+        config: PolygonConfig
     ): List<PolygonState> {
-        val centerX = provider.centerX
-        val centerY = provider.centerY
-        val height = provider.originalHeight
-        val width = provider.originalWidth
-        val halfHeight = height / 2f
-        val halfWidth = width / 2f
-
-        val cellSize = provider.originalBlockSize
-        val padding = provider.originalPaddingDelimiter
-
-        val config = FigureCommand.PolygonConfig(
-            centerX = centerX,
-            centerY = centerY,
-            halfHeight = halfHeight,
-            halfWidth = halfWidth,
-            cellSize = cellSize,
-            padding = padding,
-            startX = centerX - halfWidth,
-            startY = centerY - halfHeight
-        )
-
         val firstPolygon = getFirstPolygon(config)
         val secondPolygon = getSecondPolygon(config)
         val thirdPolygon = getThirdPolygon(config)
@@ -101,106 +76,62 @@ class FigureLR270Command : FigureCommand {
     }
 
     private fun getFourthPolygon(
-        config: FigureCommand.PolygonConfig
+        config: PolygonConfig
     ): PolygonState {
-        val bottomY = config.startY + config.cellSize * 3 + config.padding
-        val topY = config.startY + config.cellSize * 2 + config.padding * 2
-        val leftX = config.startX + config.cellSize + config.padding
-        val rightX = config.startX + config.cellSize * 2
-        return PolygonState(
-            topLeft = CoordinateState(
-                x = leftX,
-                y = topY,
-            ),
-            topRight = CoordinateState(
-                x = rightX,
-                y = topY,
-            ),
-            bottomLeft = CoordinateState(
-                x = leftX,
-                y = bottomY,
-            ),
-            bottomRight = CoordinateState(
-                x = rightX,
-                y = bottomY
-            )
+        val bottomY = config.startY + config.blockSize * 3 + config.padding
+        val topY = config.startY + config.blockSize * 2 + config.padding * 2
+        val leftX = config.startX + config.blockSize + config.padding
+        val rightX = config.startX + config.blockSize * 2
+        return PolygonState.mapTo(
+            leftX = leftX,
+            rightX = rightX,
+            topY = topY,
+            bottomY = bottomY
         )
     }
 
     private fun getThirdPolygon(
-        config: FigureCommand.PolygonConfig
+        config: PolygonConfig
     ): PolygonState {
-        val rightX = config.startX + config.cellSize - config.padding
-        val topY = config.startY + config.cellSize * 2 + config.padding * 2
-        val bottomY = config.startY + config.cellSize * 3 + config.padding
-        return PolygonState(
-            topLeft = CoordinateState(
-                x = config.startX,
-                y = topY,
-            ),
-            topRight = CoordinateState(
-                x = rightX,
-                y = topY,
-            ),
-            bottomLeft = CoordinateState(
-                x = config.startX,
-                y = bottomY
-            ),
-            bottomRight = CoordinateState(
-                x = rightX,
-                y = bottomY
-            )
+        val rightX = config.startX + config.blockSize - config.padding
+        val topY = config.startY + config.blockSize * 2 + config.padding * 2
+        val bottomY = config.startY + config.blockSize * 3 + config.padding
+        val leftX = config.startX
+        return PolygonState.mapTo(
+            leftX = leftX,
+            rightX = rightX,
+            topY = topY,
+            bottomY = bottomY
         )
     }
 
     private fun getSecondPolygon(
-        config: FigureCommand.PolygonConfig
+        config: PolygonConfig
     ): PolygonState {
-        val rightX = config.startX + config.cellSize - config.padding
-        val topY = config.startY + config.cellSize + config.padding
-        val bottomY = config.startY + config.cellSize * 2
-        return PolygonState(
-            topLeft = CoordinateState(
-                x = config.startX,
-                y = topY,
-            ),
-            topRight = CoordinateState(
-                x = rightX,
-                y = topY,
-            ),
-            bottomLeft = CoordinateState(
-                x = config.startX,
-                y = bottomY
-            ),
-            bottomRight = CoordinateState(
-                x = rightX,
-                y = bottomY
-            )
+        val rightX = config.startX + config.blockSize - config.padding
+        val topY = config.startY + config.blockSize + config.padding
+        val bottomY = config.startY + config.blockSize * 2
+        val leftX = config.startX
+        return PolygonState.mapTo(
+            leftX = leftX,
+            rightX = rightX,
+            topY = topY,
+            bottomY = bottomY
         )
     }
 
     private fun getFirstPolygon(
-        config: FigureCommand.PolygonConfig
+        config: PolygonConfig
     ): PolygonState {
-        val rightX = config.startX + config.cellSize - config.padding
-        val bottomY = config.startY + config.cellSize - config.padding
-        return PolygonState(
-            topLeft = CoordinateState(
-                x = config.startX,
-                y = config.startY,
-            ),
-            topRight = CoordinateState(
-                x = rightX,
-                y = config.startY,
-            ),
-            bottomLeft = CoordinateState(
-                x = config.startX,
-                y = bottomY,
-            ),
-            bottomRight = CoordinateState(
-                x = rightX,
-                y = bottomY
-            )
+        val rightX = config.startX + config.blockSize - config.padding
+        val bottomY = config.startY + config.blockSize - config.padding
+        val leftX = config.startX
+        val topY = config.startY
+        return PolygonState.mapTo(
+            leftX = leftX,
+            rightX = rightX,
+            topY = topY,
+            bottomY = bottomY
         )
     }
 }

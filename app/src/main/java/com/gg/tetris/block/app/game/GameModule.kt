@@ -40,43 +40,44 @@ val gameModule = module {
     viewModelOf(::GameViewModel)
 
     factory {
-        val commands = buildList<FigureCommand> {
-            val newListEntries = FigureState.entries.toMutableList()
-            newListEntries.add(FigureState.None)
+        val commands = hashMapOf<String, FigureCommand>()
 
-            newListEntries.forEach {
-                val command = when (it) {
-                    is FigureState.None -> FigureNoneCommand()
-                    is FigureState.I.H -> FigureIHCommand()
-                    is FigureState.I.V -> FigureIVCommand()
+        val newListEntries = FigureState.entries.toMutableList()
+        newListEntries.add(FigureState.None)
 
-                    is FigureState.J.R0 -> FigureJR0Command()
-                    is FigureState.J.R90 -> FigureJR90Command()
-                    is FigureState.J.R180 -> FigureJR180Command()
-                    is FigureState.J.R270 -> FigureJR270Command()
+        newListEntries.forEach {
+            val command = when (it) {
+                is FigureState.None -> FigureNoneCommand()
+                is FigureState.I.H -> FigureIHCommand()
+                is FigureState.I.V -> FigureIVCommand()
 
-                    is FigureState.L.R0 -> FigureLR0Command()
-                    is FigureState.L.R90 -> FigureLR90Command()
-                    is FigureState.L.R180 -> FigureLR180Command()
-                    is FigureState.L.R270 -> FigureLR270Command()
+                is FigureState.J.R0 -> FigureJR0Command()
+                is FigureState.J.R90 -> FigureJR90Command()
+                is FigureState.J.R180 -> FigureJR180Command()
+                is FigureState.J.R270 -> FigureJR270Command()
 
-                    is FigureState.O.X2X2 -> FigureO2X2Command()
+                is FigureState.L.R0 -> FigureLR0Command()
+                is FigureState.L.R90 -> FigureLR90Command()
+                is FigureState.L.R180 -> FigureLR180Command()
+                is FigureState.L.R270 -> FigureLR270Command()
 
-                    is FigureState.S.R0 -> FigureSR0Command()
-                    is FigureState.S.R90 -> FigureSR90Command()
+                is FigureState.O.X2X2 -> FigureO2X2Command()
 
-                    is FigureState.T.R0 -> FigureTR0Command()
-                    is FigureState.T.R90 -> FigureTR90Command()
-                    is FigureState.T.R180 -> FigureTR180Command()
-                    is FigureState.T.R270 -> FigureTR270Command()
+                is FigureState.S.R0 -> FigureSR0Command()
+                is FigureState.S.R90 -> FigureSR90Command()
 
-                    is FigureState.Z.R0 -> FigureZR0Command()
-                    is FigureState.Z.R90 -> FigureZR90Command()
-                }
+                is FigureState.T.R0 -> FigureTR0Command()
+                is FigureState.T.R90 -> FigureTR90Command()
+                is FigureState.T.R180 -> FigureTR180Command()
+                is FigureState.T.R270 -> FigureTR270Command()
 
-                add(command)
+                is FigureState.Z.R0 -> FigureZR0Command()
+                is FigureState.Z.R90 -> FigureZR90Command()
             }
+
+            commands[it.ownerId] = command
         }
+
         FigureCommandDelegate(
             gameBitmapMapper = get<GameBitmapMapper>(),
             commands = commands,

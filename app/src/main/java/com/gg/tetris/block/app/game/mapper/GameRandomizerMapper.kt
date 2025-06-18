@@ -6,39 +6,32 @@ import com.gg.tetris.block.app.game.states.game.GameFigureState
 
 class GameRandomizerMapper {
 
-    private val randomColorMap = hashMapOf<ColorState, Int>()
-    private val randomFigureMap = hashMapOf<String, Int>()
+    private val usedCombinations = mutableSetOf<Pair<FigureState, ColorState>>()
+    private val allColorStates = ColorState.entries.filter { it != ColorState.EMPTY }
 
-    init {
-        ColorState.entries.forEach {
-            if (it == ColorState.EMPTY) return@forEach
-            randomColorMap[it] = 0
-        }
+    fun getRandomFigure(): GameFigureState {
+        val availableFigureStates = FigureState.entries.toMutableList()
+        val availableColorStates = allColorStates.toMutableList()
 
-        FigureState.Companion.entries.forEach {
-            randomFigureMap[it.ownerId] = 0
-        }
-    }
+        while (availableFigureStates.isNotEmpty() && availableColorStates.isNotEmpty()) {
+            val randomFigure = availableFigureStates.random()
+            val randomColor = availableColorStates.random()
+            val combination = randomFigure to randomColor
 
-    fun getRandomFigure(): List<GameFigureState> {
-        val selectedFigures = randomFigureMap.entries
-            .sortedBy { it.value }
-            .distinctBy { it.key }
-            .map { entry ->
-                FigureState.Companion.entries.first { it.ownerId == entry.key }
+            if (!usedCombinations.contains(combination)) {
+                usedCombinations.add(combination)
+                return GameFigureState(randomFigure, randomColor)
             }
 
-        val selectedColors = randomColorMap.entries
-            .sortedBy { it.value }
-            .take(3)
-            .map { it.key }
+            availableFigureStates.remove(randomFigure)
+            availableColorStates.remove(randomColor)
+        }
 
-        return selectedFigures
-            .zip(selectedColors) { figure, color ->
-                randomFigureMap[figure.ownerId] = (randomFigureMap[figure.ownerId] ?: 0) + 1
-                randomColorMap[color] = (randomColorMap[color] ?: 0) + 1
+        usedCombinations.clear()
 
-                GameFigureState(figure, color)
-            }
+        return GameFigureState(
+            availableFigureStates.random(),
+            allColorStates.random()
+        )
     }
 }

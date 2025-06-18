@@ -1,31 +1,14 @@
 package com.gg.tetris.block.app.game.command.figure_command.z_command
 
 import com.gg.tetris.block.app.game.command.figure_command.FigureCommand
-import com.gg.tetris.block.app.game.command.figure_command.FigureCommand.PolygonProvider
-import com.gg.tetris.block.app.game.states.figure.FigureState
+import com.gg.tetris.block.app.game.command.figure_command.FigureCommand.PolygonConfig
 import com.gg.tetris.block.app.game.states.polygon.PolygonState
 import com.gg.tetris.block.app.game.view.figure.FigureItem
 
 class FigureZR90Command : FigureCommand {
 
-    override fun getState(
+    override fun getFigureState(
         provider: FigureCommand.ItemProvider
-    ): FigureItem.State {
-        return zR90(provider)
-    }
-
-    override fun getPolygonsState(
-        provider: PolygonProvider
-    ): List<PolygonState> {
-        return emptyList()
-    }
-
-    override fun isRequired(state: FigureState): Boolean {
-        return state is FigureState.Z.R90
-    }
-
-    private fun zR90(
-        provider: FigureCommand.ItemProvider,
     ): FigureItem.State {
         val containerBlocks = mutableListOf<FigureItem.Block>()
         val originalBlocks = mutableListOf<FigureItem.Block>()
@@ -82,6 +65,76 @@ class FigureZR90Command : FigureCommand {
         return FigureItem.State(
             containerState = containerState,
             originalState = originalState,
+        )
+    }
+
+    override fun getPolygonsState(
+        config: PolygonConfig
+    ): List<PolygonState> {
+        val firstPolygon = getFirstPolygon(config)
+        val secondPolygon = getSecondPolygon(config)
+        val thirdPolygon = getThirdPolygon(config)
+        val fourthPolygon = getFourthPolygon(config)
+        return listOf(firstPolygon, secondPolygon, thirdPolygon, fourthPolygon)
+    }
+
+    private fun getFourthPolygon(
+        config: PolygonConfig
+    ): PolygonState {
+        val leftX = config.startX
+        val rightX = config.startX + config.blockSize - config.padding
+        val topY = config.startY + config.blockSize * 2 + config.padding * 2
+        val bottomY = config.startY + config.blockSize * 3 + config.padding
+        return PolygonState.mapTo(
+            leftX = leftX,
+            rightX = rightX,
+            topY = topY,
+            bottomY = bottomY,
+        )
+    }
+
+    private fun getThirdPolygon(
+        config: PolygonConfig
+    ): PolygonState {
+        val topY = config.startY + config.blockSize + config.padding
+        val bottomY = config.startY + config.blockSize * 2
+        val leftX = config.startX
+        val rightX = config.startX + config.blockSize - config.padding
+        return PolygonState.mapTo(
+            leftX = leftX,
+            rightX = rightX,
+            topY = topY,
+            bottomY = bottomY,
+        )
+    }
+
+    private fun getSecondPolygon(
+        config: PolygonConfig
+    ): PolygonState {
+        val leftX = config.startX + config.blockSize + config.padding
+        val rightX = config.startX + config.blockSize * 2
+        val topY = config.startY + config.blockSize + config.padding
+        val bottomY = config.startY + config.blockSize * 2
+        return PolygonState.mapTo(
+            leftX = leftX,
+            rightX = rightX,
+            topY = topY,
+            bottomY = bottomY,
+        )
+    }
+
+    private fun getFirstPolygon(
+        config: PolygonConfig
+    ): PolygonState {
+        val leftX = config.startX + config.blockSize + config.padding
+        val rightX = config.startX + config.blockSize * 2
+        val topY = config.startY
+        val bottomY = config.startY + config.blockSize - config.padding
+        return PolygonState.mapTo(
+            leftX = leftX,
+            rightX = rightX,
+            topY = topY,
+            bottomY = bottomY,
         )
     }
 }
