@@ -72,54 +72,6 @@ class GameFragment : Fragment(R.layout.fragment_game) {
     }
 
     private fun setTestPolygons(list: List<PolygonState>) {
-//        list.getOrNull(3)?.let {
-//            val view1 = View(context).apply {
-//                layoutParams = FrameLayout.LayoutParams(
-//                    3.dp.toInt(),
-//                    3.dp.toInt(),
-//                )
-//                setBackgroundColor(Color.YELLOW)
-//            }
-//
-//            val view2 = View(context).apply {
-//                layoutParams = FrameLayout.LayoutParams(
-//                    3.dp.toInt(),
-//                    3.dp.toInt(),
-//                )
-//                setBackgroundColor(Color.YELLOW)
-//            }
-//
-//            val view3 = View(context).apply {
-//                layoutParams = FrameLayout.LayoutParams(
-//                    3.dp.toInt(),
-//                    3.dp.toInt(),
-//                )
-//                setBackgroundColor(Color.YELLOW)
-//            }
-//            val view4 = View(context).apply {
-//                layoutParams = FrameLayout.LayoutParams(
-//                    3.dp.toInt(),
-//                    3.dp.toInt(),
-//                )
-//                setBackgroundColor(Color.YELLOW)
-//            }
-//            binding.containerGame.addView(view1)
-//            binding.containerGame.addView(view2)
-//            binding.containerGame.addView(view3)
-//            binding.containerGame.addView(view4)
-//
-//            view1.translationX = it.topLeft.x
-//            view1.translationY = it.topLeft.y
-//
-//            view2.translationX = it.topRight.x
-//            view2.translationY = it.topRight.y
-//
-//            view3.translationX = it.bottomLeft.x
-//            view3.translationY = it.bottomLeft.y
-//
-//            view4.translationX = it.bottomRight.x
-//            view4.translationY = it.bottomRight.y
-//        }
         list.forEach {
             val view1 = View(context).apply {
                 layoutParams = FrameLayout.LayoutParams(

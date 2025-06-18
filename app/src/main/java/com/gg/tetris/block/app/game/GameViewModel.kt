@@ -13,6 +13,7 @@ import com.gg.tetris.block.app.game.mapper.GameAreaMapper
 import com.gg.tetris.block.app.game.mapper.GameCoordinateMapper
 import com.gg.tetris.block.app.game.mapper.GameRandomizerMapper
 import com.gg.tetris.block.app.game.mapper.GameRefreshMapper
+import com.gg.tetris.block.app.game.states.color.ColorState
 import com.gg.tetris.block.app.game.states.coordinate.CoordinateState
 import com.gg.tetris.block.app.game.states.game.GameCoordinateState
 import com.gg.tetris.block.app.game.states.game.GameFigureState
@@ -183,6 +184,12 @@ class GameViewModel(
                     gameList = gameList,
                     polygons = polygons
                 )
+
+                if (matchList.isEmpty()) {
+                    onDragFailed(figureTag)
+                    return false
+                }
+
                 val matchSize = matchList.size
                 val polygonsSize = polygons.size
 
@@ -195,6 +202,8 @@ class GameViewModel(
                     gameList = list
 
                     dragFigureState = GameFigureState.EMPTY
+
+                    checkFullVerticalOrHorizontal()
 
                     refreshBlocksAllEmpty()
                 } else {
@@ -217,6 +226,29 @@ class GameViewModel(
             }
         }
         return true
+    }
+
+    private fun checkFullVerticalOrHorizontal() {
+        val horizontals = gameList.groupBy { it.ownerState.horizontal }
+        val verticals = gameList.groupBy { it.ownerState.vertical }
+
+        val fullList = mutableListOf<GameState>()
+        horizontals.forEach {
+            val isFull = it.value.all { it.colorState != ColorState.EMPTY }
+            if (isFull) fullList.addAll(it.value)
+        }
+
+        verticals.forEach {
+            val isFull = it.value.all { it.colorState != ColorState.EMPTY }
+            if (isFull) fullList.addAll(it.value)
+        }
+
+        var list = gameList.toMutableList()
+        fullList.forEach { gameState ->
+            val index = list.indexOf(gameState)
+            if (index != -1) list[index] = gameState.copy(colorState = ColorState.EMPTY)
+        }
+        gameList = list
     }
 
     private fun getPolygons(
@@ -262,7 +294,7 @@ class GameViewModel(
                         x = game.point.x,
                         y = game.point.y
                     )
-                    if (isMatch) {
+                    if (isMatch && game.colorState == ColorState.EMPTY) {
                         add(game)
                     }
                 }
