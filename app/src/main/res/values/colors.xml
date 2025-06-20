@@ -12,4 +12,6 @@
     <color name="game_container_block_surface">#CC2D1196</color>
 
     <color name="game_refresh_background">#FF9900</color>
+
+    <color name="game_location_block">#5545B3</color>
 </resources>

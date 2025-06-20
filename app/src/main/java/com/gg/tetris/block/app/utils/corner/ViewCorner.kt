@@ -6,9 +6,8 @@ import android.view.View
 import androidx.annotation.ColorInt
 import androidx.annotation.Px
 import com.gg.tetris.block.app.utils.applyPadding
-import com.gg.tetris.block.app.utils.drawable.BackgroundConsideringStrokeDrawable
+import com.gg.tetris.block.app.utils.drawable.BackgroundDrawable
 import com.gg.tetris.block.app.utils.drawable.BorderDrawable
-import com.gg.tetris.block.app.utils.getColor
 import com.gg.tetris.block.app.utils.makeRoundCorner
 
 sealed interface ViewCorner {
@@ -102,7 +101,7 @@ sealed interface ViewCorner {
 
             val arrayLayers = buildList {
                 if (backgroundColorInt != Color.TRANSPARENT) {
-                    BackgroundConsideringStrokeDrawable(
+                    BackgroundDrawable(
                         backgroundColorInt = backgroundColorInt,
                         stroke = stroke.toFloat(),
                         radius = radiusFloat,

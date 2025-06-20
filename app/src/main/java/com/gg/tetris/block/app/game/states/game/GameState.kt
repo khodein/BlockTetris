@@ -8,4 +8,6 @@ data class GameState(
     val ownerState: OwnerState,
     val colorState: ColorState,
     val point: CoordinateState,
+    val isActive: Boolean = false,
+    val isLocation: Boolean = false,
 )

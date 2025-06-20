@@ -11,6 +11,7 @@ import com.gg.tetris.block.app.utils.setLightNavigationAndStatusBars
 import org.koin.android.ext.android.inject
 import org.koin.androidx.fragment.android.setupKoinFragmentFactory
 
+
 class MainActivity : AppCompatActivity(), RouterManager.Provider {
 
     private val binding: ActivityMainBinding by lazy { ActivityMainBinding.inflate(layoutInflater) }

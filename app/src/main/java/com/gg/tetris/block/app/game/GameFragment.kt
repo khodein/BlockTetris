@@ -6,10 +6,11 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import com.gg.tetris.block.app.BuildConfig
 import com.gg.tetris.block.app.R
 import com.gg.tetris.block.app.databinding.FragmentGameBinding
 import com.gg.tetris.block.app.game.states.coordinate.CoordinateState
-import com.gg.tetris.block.app.game.states.game.GameCoordinateState
+import com.gg.tetris.block.app.game.states.coordinate.GameCoordinateState
 import com.gg.tetris.block.app.game.states.game.GameState
 import com.gg.tetris.block.app.game.states.polygon.PolygonState
 import com.gg.tetris.block.app.utils.dp
@@ -24,6 +25,10 @@ class GameFragment : Fragment(R.layout.fragment_game) {
     private val binding by viewBinding(init = FragmentGameBinding::bind)
     private val viewModel by viewModel<GameViewModel>()
 
+    private var polygonsDemoViews: List<View> = emptyList()
+    private var gameDemoViews: List<View> = emptyList()
+    private var centreDemoFigure: View? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.containerGame.setOnDragListener(viewModel)
@@ -34,11 +39,14 @@ class GameFragment : Fragment(R.layout.fragment_game) {
 
     private fun setObservable() = with(viewModel) {
         blocksFlow
-            .observe(this@GameFragment, binding.areaGame::bindBlockList)
+            .observe(this@GameFragment, binding.areaGame::bindBlocksState)
+
+        locationBlocksFlow
+            .observe(this@GameFragment, binding.areaGame::bindLocationBlocksState)
 
         backgroundAreaFlow
             .filterNotNull()
-            .observe(this@GameFragment, binding.areaGame::bindBackground)
+            .observe(this@GameFragment, binding.areaGame::bindAreaState)
 
         leftContainerFigureFlow
             .filterNotNull()
@@ -60,18 +68,43 @@ class GameFragment : Fragment(R.layout.fragment_game) {
             .filterNotNull()
             .observe(this@GameFragment, ::updateCoordinate)
 
-        gameListFlow
-            .observe(this@GameFragment, ::setGameList)
+        //Test
+        if (BuildConfig.DEBUG) {
+            gameTestListFlow
+                .observe(this@GameFragment, ::setTestGameList)
 
-        gameTestFigureFlow
-            .filterNotNull()
-            .observe(this@GameFragment, ::setTestCenterFigure)
+            gameTestFigureFlow
+                .filterNotNull()
+                .observe(this@GameFragment, ::setTestCenterFigure)
 
-        gameTestPolygonsFigureFlow
-            .observe(this@GameFragment, ::setTestPolygons)
+            gameTestPolygonsFigureFlow
+                .observe(this@GameFragment, ::setTestPolygons)
+        }
+    }
+
+    private fun updateCoordinate(state: GameCoordinateState) = with(binding) {
+        areaGame.apply {
+            translationX = state.areaCoordinate.x
+            translationY = state.areaCoordinate.y
+            isVisible = true
+        }
+
+        containerBlocksGame.apply {
+            translationX = state.blocksCoordinate.x
+            translationY = state.blocksCoordinate.y
+            isVisible = true
+        }
+
+        refreshBlockGame.apply {
+            translationX = state.refreshCoordinate.x
+            translationY = state.refreshCoordinate.y
+            isVisible = true
+        }
     }
 
     private fun setTestPolygons(list: List<PolygonState>) {
+        polygonsDemoViews.forEach { binding.containerGame.removeView(it) }
+        val polygonsDemoViewsList = mutableListOf<View>()
         list.forEach {
             val view1 = View(context).apply {
                 layoutParams = FrameLayout.LayoutParams(
@@ -119,24 +152,36 @@ class GameFragment : Fragment(R.layout.fragment_game) {
 
             view4.translationX = it.bottomRight.x
             view4.translationY = it.bottomRight.y
+
+            polygonsDemoViewsList.add(view1)
+            polygonsDemoViewsList.add(view2)
+            polygonsDemoViewsList.add(view3)
+            polygonsDemoViewsList.add(view4)
         }
+
+        polygonsDemoViews = polygonsDemoViewsList
     }
 
     private fun setTestCenterFigure(coordinateState: CoordinateState) {
-        val view = View(context).apply {
+        val centreDemoFigure = centreDemoFigure ?: View(context).apply {
             layoutParams = FrameLayout.LayoutParams(
                 5.dp.toInt(),
                 5.dp.toInt(),
             )
             setBackgroundColor(Color.GREEN)
+        }.also {
+            centreDemoFigure = it
+            binding.containerGame.addView(it)
         }
-        binding.containerGame.addView(view)
-        view.translationX = coordinateState.x
-        view.translationY = coordinateState.y
+        centreDemoFigure.translationX = coordinateState.x
+        centreDemoFigure.translationY = coordinateState.y
     }
 
-    private fun setGameList(list: List<GameState>) {
-        list.forEach {
+    private fun setTestGameList(list: List<GameState>) {
+        gameDemoViews.forEach {
+            binding.containerGame.removeView(it)
+        }
+        gameDemoViews = list.map {
             val view = View(context).apply {
                 layoutParams = FrameLayout.LayoutParams(
                     1.dp.toInt(),
@@ -147,26 +192,14 @@ class GameFragment : Fragment(R.layout.fragment_game) {
             binding.containerGame.addView(view)
             view.translationX = it.point.x
             view.translationY = it.point.y
+            view
         }
     }
 
-    private fun updateCoordinate(state: GameCoordinateState) = with(binding) {
-        areaGame.apply {
-            translationX = state.areaCoordinate.x
-            translationY = state.areaCoordinate.y
-            isVisible = true
-        }
-
-        containerBlocksGame.apply {
-            translationX = state.blocksCoordinate.x
-            translationY = state.blocksCoordinate.y
-            isVisible = true
-        }
-
-        refreshBlockGame.apply {
-            translationX = state.refreshCoordinate.x
-            translationY = state.refreshCoordinate.y
-            isVisible = true
-        }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        centreDemoFigure = null
+        gameDemoViews = emptyList()
+        polygonsDemoViews = emptyList()
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import androidx.annotation.ArrayRes
+import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -28,12 +29,14 @@ class ResManager(
 
     fun getDrawableToBitmap(
         drawable: Drawable,
+        @ColorInt colorInt: Int? = null,
         width: Float? = null,
         height: Float? = null
     ): Bitmap {
         return drawable.getDrawableToBitmap(
             width = width,
             height = height,
+            colorInt = colorInt
         )
     }
 

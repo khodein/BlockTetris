@@ -11,7 +11,7 @@ import android.graphics.drawable.Drawable
 import androidx.annotation.ColorInt
 import androidx.annotation.Px
 import com.gg.tetris.block.app.utils.corner.RoundMode
-import com.gg.tetris.block.app.utils.corner.getRadiiForRoundMode
+import com.gg.tetris.block.app.utils.getRadiiForRoundMode
 
 class BorderDrawable(
     private val roundMode: RoundMode,

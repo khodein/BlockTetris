@@ -7,37 +7,49 @@ import android.view.View
 import android.view.View.DRAG_FLAG_OPAQUE
 import android.view.View.OnDragListener
 import androidx.lifecycle.ViewModel
-import com.gg.tetris.block.app.game.builders.GameFigureDragShadowBuilder
-import com.gg.tetris.block.app.game.command.figure_command.FigureCommandDelegate
+import androidx.lifecycle.viewModelScope
+import com.gg.tetris.block.app.BuildConfig
+import com.gg.tetris.block.app.game.builder.GameFigureDragShadowBuilder
+import com.gg.tetris.block.app.game.manager.figure.GameFigureManager
+import com.gg.tetris.block.app.game.manager.params.GameParamsManager
+import com.gg.tetris.block.app.game.manager.random.GameRandomizerManager
+import com.gg.tetris.block.app.game.manager.random.state.GameRandomFigureState
 import com.gg.tetris.block.app.game.mapper.GameAreaMapper
 import com.gg.tetris.block.app.game.mapper.GameCoordinateMapper
-import com.gg.tetris.block.app.game.mapper.GameRandomizerMapper
 import com.gg.tetris.block.app.game.mapper.GameRefreshMapper
 import com.gg.tetris.block.app.game.states.color.ColorState
 import com.gg.tetris.block.app.game.states.coordinate.CoordinateState
-import com.gg.tetris.block.app.game.states.game.GameCoordinateState
-import com.gg.tetris.block.app.game.states.game.GameFigureState
+import com.gg.tetris.block.app.game.states.coordinate.GameCoordinateState
 import com.gg.tetris.block.app.game.states.game.GameState
 import com.gg.tetris.block.app.game.states.polygon.PolygonState
-import com.gg.tetris.block.app.game.view.area.GameAreaItem
-import com.gg.tetris.block.app.game.view.container_figure.ContainerFigureItem
+import com.gg.tetris.block.app.game.view.area.AreaItem
+import com.gg.tetris.block.app.game.view.container.ContainerFigureItem
 import com.gg.tetris.block.app.game.view.refresh.GameRefreshItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class GameViewModel(
     private val gameAreaMapper: GameAreaMapper,
     private val gameRefreshMapper: GameRefreshMapper,
-    private val gameRandomizerMapper: GameRandomizerMapper,
+    private val gameRandomizerManager: GameRandomizerManager,
     private val gameCoordinateMapper: GameCoordinateMapper,
-    private val figureCommandDelegate: FigureCommandDelegate,
+    private val gameFigureManager: GameFigureManager,
+    private val gameParamsManager: GameParamsManager,
 ) : ViewModel(), OnDragListener, ContainerFigureItem.Provider {
 
-    private val _blocksFlow = MutableStateFlow<List<GameAreaItem.Block>>(emptyList())
+    private var dragLocationJob: Job? = null
+
+    private val _blocksFlow = MutableStateFlow<List<AreaItem.Block>>(emptyList())
     val blocksFlow = _blocksFlow.asStateFlow()
 
-    private val _backgroundAreaFlow = MutableStateFlow<GameAreaItem.Background?>(null)
-    val backgroundAreaFlow = _backgroundAreaFlow.asStateFlow()
+    private val _locationBlocksFlow = MutableStateFlow<List<AreaItem.Block>>(emptyList())
+    val locationBlocksFlow = _locationBlocksFlow.asStateFlow()
+
+    private val _areaAreaStateFlow = MutableStateFlow<AreaItem.AreaState?>(null)
+    val backgroundAreaFlow = _areaAreaStateFlow.asStateFlow()
 
     private val _leftContainerFigureFlow = MutableStateFlow<ContainerFigureItem.State?>(null)
     val leftContainerFigureFlow = _leftContainerFigureFlow.asStateFlow()
@@ -54,8 +66,8 @@ class GameViewModel(
     private val _coordinateStateFlow = MutableStateFlow<GameCoordinateState?>(null)
     val coordinateStateFlow = _coordinateStateFlow.asStateFlow()
 
-    private val _gameListFlow = MutableStateFlow<List<GameState>>(emptyList())
-    val gameListFlow = _gameListFlow.asStateFlow()
+    private val _gameTestListFlow = MutableStateFlow<List<GameState>>(emptyList())
+    val gameTestListFlow = _gameTestListFlow.asStateFlow()
 
     private val _gameTestFigureFlow = MutableStateFlow<CoordinateState?>(null)
     val gameTestFigureFlow = _gameTestFigureFlow.asStateFlow()
@@ -63,40 +75,43 @@ class GameViewModel(
     private val _gameTestPolygonsFigureFlow = MutableStateFlow<List<PolygonState>>(emptyList())
     val gameTestPolygonsFigureFlow = _gameTestPolygonsFigureFlow.asStateFlow()
 
-    private var dragFigureState: GameFigureState = GameFigureState.EMPTY
+    private var dragFigureState: GameRandomFigureState = GameRandomFigureState.EMPTY
 
     private var gameList: List<GameState> = emptyList()
         set(value) {
             _blocksFlow.value = gameAreaMapper.mapBlocksList(value)
-            _gameListFlow.value = value
+            _gameTestListFlow.value = value
             field = value
         }
 
-    private var leftFigureState: GameFigureState = GameFigureState.EMPTY
+    private var leftFigureState: GameRandomFigureState = GameRandomFigureState.EMPTY
         set(value) {
             _leftContainerFigureFlow.value = ContainerFigureItem.State(
                 tag = ContainerFigureItem.Tag.LEFT,
-                figureState = figureCommandDelegate.mapState(value),
+                figureState = gameFigureManager.getState(value),
+                container = gameParamsManager.getContainer(),
                 provider = this
             )
             field = value
         }
 
-    private var centerFigureState: GameFigureState = GameFigureState.EMPTY
+    private var centerFigureState: GameRandomFigureState = GameRandomFigureState.EMPTY
         set(value) {
             _centerContainerFigureFlow.value = ContainerFigureItem.State(
                 tag = ContainerFigureItem.Tag.CENTER,
-                figureState = figureCommandDelegate.mapState(value),
+                figureState = gameFigureManager.getState(value),
+                container = gameParamsManager.getContainer(),
                 provider = this,
             )
             field = value
         }
 
-    private var rightFigureState: GameFigureState = GameFigureState.EMPTY
+    private var rightFigureState: GameRandomFigureState = GameRandomFigureState.EMPTY
         set(value) {
             _rightContainerFigureFlow.value = ContainerFigureItem.State(
                 tag = ContainerFigureItem.Tag.RIGHT,
-                figureState = figureCommandDelegate.mapState(value),
+                figureState = gameFigureManager.getState(value),
+                container = gameParamsManager.getContainer(),
                 provider = this
             )
             field = value
@@ -118,7 +133,7 @@ class GameViewModel(
     }
 
     private fun updateBackgroundStateGameArea() {
-        _backgroundAreaFlow.value = gameAreaMapper.mapAreaBackground()
+        _areaAreaStateFlow.value = gameAreaMapper.mapAreaState()
     }
 
     private fun updateRefreshState() {
@@ -130,30 +145,42 @@ class GameViewModel(
 
     private fun refreshBlocksAllEmpty() {
         if (
-            leftFigureState == GameFigureState.EMPTY &&
-            centerFigureState == GameFigureState.EMPTY &&
-            rightFigureState == GameFigureState.EMPTY
+            leftFigureState == GameRandomFigureState.EMPTY &&
+            centerFigureState == GameRandomFigureState.EMPTY &&
+            rightFigureState == GameRandomFigureState.EMPTY
         ) {
             refreshBlocks()
         }
     }
 
     private fun refreshBlocks() {
-        refreshLeftFigure()
-        refreshCenterFigure()
-        refreshRightFigure()
+        viewModelScope.launch(Dispatchers.Default) {
+            runCatching {
+                Triple(
+                    refreshLeftFigure(),
+                    refreshCenterFigure(),
+                    refreshRightFigure()
+                )
+            }.onSuccess {
+                leftFigureState = it.first
+                centerFigureState = it.second
+                rightFigureState = it.third
+            }.onFailure {
+                gameRandomizerManager.reset()
+            }
+        }
     }
 
-    private fun refreshLeftFigure() {
-        leftFigureState = gameRandomizerMapper.getRandomFigure()
+    private fun refreshLeftFigure(): GameRandomFigureState {
+        return gameRandomizerManager.getRandomFigure()
     }
 
-    private fun refreshCenterFigure() {
-        centerFigureState = gameRandomizerMapper.getRandomFigure()
+    private fun refreshCenterFigure(): GameRandomFigureState {
+        return gameRandomizerManager.getRandomFigure()
     }
 
-    private fun refreshRightFigure() {
-        rightFigureState = gameRandomizerMapper.getRandomFigure()
+    private fun refreshRightFigure(): GameRandomFigureState {
+        return gameRandomizerManager.getRandomFigure()
     }
 
     override fun onDrag(view: View?, event: DragEvent?): Boolean {
@@ -161,101 +188,59 @@ class GameViewModel(
             ContainerFigureItem.Tag.valueOf(it.toString())
         }
 
-        when (event?.action) {
+        onDragLocationCancel()
+
+        return when (event?.action) {
             DragEvent.ACTION_DRAG_STARTED -> onDragStarted(figureTag)
 
-            DragEvent.ACTION_DROP -> {
-                val coordinate = coordinateStateFlow.value
-                if (coordinate == null) {
-                    return false
-                }
+            DragEvent.ACTION_DROP -> onDragDrop(
+                figureTag = figureTag,
+                eventX = event.x,
+                eventY = event.y,
+            )
 
-                val polygons = getPolygons(
-                    eventX = event.x,
-                    eventY = event.y
-                )
+            DragEvent.ACTION_DRAG_LOCATION -> onDragLocation(
+                eventX = event.x,
+                eventY = event.y
+            )
 
-                if (polygons.isEmpty()) {
-                    onDragFailed(figureTag)
-                    return false
-                }
+            DragEvent.ACTION_DRAG_EXITED -> onDragFailed(figureTag)
 
-                val matchList = getMatchesList(
-                    gameList = gameList,
-                    polygons = polygons
-                )
-
-                if (matchList.isEmpty()) {
-                    onDragFailed(figureTag)
-                    return false
-                }
-
-                val matchSize = matchList.size
-                val polygonsSize = polygons.size
-
-                if (polygonsSize == matchSize) {
-                    var list = gameList.toMutableList()
-                    matchList.forEach { gameState ->
-                        val index = list.indexOf(gameState)
-                        list[index] = gameState.copy(colorState = dragFigureState.colorState)
-                    }
-                    gameList = list
-
-                    dragFigureState = GameFigureState.EMPTY
-
-                    checkFullVerticalOrHorizontal()
-
-                    refreshBlocksAllEmpty()
-                } else {
-                    onDragFailed(figureTag)
-                    return false
-                }
-            }
-
-            DragEvent.ACTION_DRAG_LOCATION -> {
-
-            }
-
-            DragEvent.ACTION_DRAG_EXITED -> {
-                onDragFailed(figureTag)
-                return false
-            }
-
-            else -> {
-
-            }
+            else -> true
         }
-        return true
     }
 
-    private fun checkFullVerticalOrHorizontal() {
-        val horizontals = gameList.groupBy { it.ownerState.horizontal }
-        val verticals = gameList.groupBy { it.ownerState.vertical }
+    private fun onClearCheck(
+        list: List<GameState>
+    ) {
+        val fullStates = mutableSetOf<GameState>()
 
-        val fullList = mutableListOf<GameState>()
-        horizontals.forEach {
-            val isFull = it.value.all { it.colorState != ColorState.EMPTY }
-            if (isFull) fullList.addAll(it.value)
-        }
+        list.groupBy { it.ownerState.horizontal }
+            .values
+            .filter { line -> line.all { it.isActive } }
+            .forEach { fullStates.addAll(it) }
 
-        verticals.forEach {
-            val isFull = it.value.all { it.colorState != ColorState.EMPTY }
-            if (isFull) fullList.addAll(it.value)
-        }
+        list.groupBy { it.ownerState.vertical }
+            .values
+            .filter { line -> line.all { it.isActive } }
+            .forEach { fullStates.addAll(it) }
 
-        var list = gameList.toMutableList()
-        fullList.forEach { gameState ->
-            val index = list.indexOf(gameState)
-            if (index != -1) list[index] = gameState.copy(colorState = ColorState.EMPTY)
+        if (fullStates.isNotEmpty()) {
+            gameList = list.map { gameState ->
+                if (gameState in fullStates) {
+                    gameState.copy(colorState = ColorState.EMPTY, isActive = false)
+                } else {
+                    gameState
+                }
+            }
         }
-        gameList = list
     }
 
     private fun getPolygons(
         eventX: Float,
         eventY: Float,
     ): List<PolygonState> {
-        val figureState = figureCommandDelegate.mapState(dragFigureState)
+        val figureState = gameFigureManager.getState(dragFigureState)
 
         val originalHeight = figureState.originalState.height
         val originalWidth = figureState.originalState.width
@@ -266,19 +251,20 @@ class GameViewModel(
         val centerX = eventX - offsetX
         val centerY = eventY - offsetY
 
-        _gameTestFigureFlow.value = CoordinateState(
-            x = centerX,
-            y = centerY
-        )
-
-        val polygons = figureCommandDelegate.mapPolygonsState(
+        val polygons = gameFigureManager.getPolygonsState(
             eventY = eventY,
             eventX = eventX,
             state = dragFigureState,
             figureState = figureState
         )
 
-        _gameTestPolygonsFigureFlow.value = polygons
+        if (BuildConfig.DEBUG) {
+            _gameTestFigureFlow.value = CoordinateState(
+                x = centerX,
+                y = centerY
+            )
+            _gameTestPolygonsFigureFlow.value = polygons
+        }
 
         return polygons
     }
@@ -286,17 +272,21 @@ class GameViewModel(
     private fun getMatchesList(
         gameList: List<GameState>,
         polygons: List<PolygonState>
-    ): List<GameState> {
-        return buildList {
-            gameList.forEach { game ->
-                polygons.forEach { polygon ->
-                    val isMatch = polygon.contains(
-                        x = game.point.x,
-                        y = game.point.y
-                    )
-                    if (isMatch && game.colorState == ColorState.EMPTY) {
-                        add(game)
-                    }
+    ) = buildList {
+        gameList.forEach { game ->
+            if (game.isActive == true) {
+                return@forEach
+            }
+
+            polygons.forEach { polygon ->
+                val isMatch = polygon.isMatch(
+                    x = game.point.x,
+                    y = game.point.y
+                )
+                if (isMatch) {
+                    add(game)
+                } else {
+                    return@forEach
                 }
             }
         }
@@ -304,7 +294,7 @@ class GameViewModel(
 
     private fun onDragFailed(
         figureTag: ContainerFigureItem.Tag?
-    ) {
+    ): Boolean {
         when (figureTag) {
             ContainerFigureItem.Tag.LEFT -> {
                 leftFigureState = dragFigureState
@@ -322,33 +312,156 @@ class GameViewModel(
             else -> Unit
         }
 
-        dragFigureState = GameFigureState.EMPTY
+        dragFigureState = GameRandomFigureState.EMPTY
+
+        return false
     }
 
     private fun onDragStarted(
         figureTag: ContainerFigureItem.Tag?
-    ) {
-        dragFigureState = when (figureTag) {
+    ): Boolean {
+        return when (figureTag) {
             ContainerFigureItem.Tag.LEFT -> {
                 val state = leftFigureState
-                leftFigureState = GameFigureState.EMPTY
-                state
+                leftFigureState = GameRandomFigureState.EMPTY
+                dragFigureState = state
+                true
             }
 
             ContainerFigureItem.Tag.CENTER -> {
                 val state = centerFigureState
-                centerFigureState = GameFigureState.EMPTY
-                state
+                centerFigureState = GameRandomFigureState.EMPTY
+                dragFigureState = state
+                true
             }
 
             ContainerFigureItem.Tag.RIGHT -> {
                 val state = rightFigureState
-                rightFigureState = GameFigureState.EMPTY
-                state
-
+                rightFigureState = GameRandomFigureState.EMPTY
+                dragFigureState = state
+                true
             }
 
-            else -> GameFigureState.EMPTY
+            else -> {
+                dragFigureState = GameRandomFigureState.EMPTY
+                false
+            }
+        }
+    }
+
+    private fun onDragLocation(
+        eventX: Float,
+        eventY: Float
+    ): Boolean {
+        val coordinate = coordinateStateFlow.value
+        if (coordinate == null) {
+            onDragLocationCancel()
+            return false
+        }
+
+        val polygons = getPolygons(
+            eventX = eventX,
+            eventY = eventY
+        )
+
+        if (polygons.isEmpty()) {
+            onDragLocationCancel()
+            return true
+        }
+
+        val matchList = getMatchesList(
+            gameList = gameList,
+            polygons = polygons
+        )
+
+        if (matchList.isEmpty()) {
+            onDragLocationCancel()
+            return true
+        }
+
+        val matchSize = matchList.size
+        val polygonsSize = polygons.size
+
+        dragLocationJob?.cancel()
+        dragLocationJob = viewModelScope.launch(Dispatchers.Default) {
+            _locationBlocksFlow.value = if (polygonsSize == matchSize) {
+                val list = gameList.toMutableList()
+                matchList.forEach { gameState ->
+                    val index = list.indexOf(gameState)
+                    if (index != -1) {
+                        list[index] = gameState.copy(
+                            isLocation = true,
+                        )
+                    }
+                }
+                gameAreaMapper.mapLocationBlocksList(list)
+            } else {
+                emptyList()
+            }
+        }
+
+        return true
+    }
+
+    private fun onDragLocationCancel() {
+        dragLocationJob?.cancel()
+        _locationBlocksFlow.value = emptyList()
+    }
+
+    private fun onDragDrop(
+        figureTag: ContainerFigureItem.Tag?,
+        eventX: Float,
+        eventY: Float
+    ): Boolean {
+        val coordinate = coordinateStateFlow.value
+        if (coordinate == null) {
+            return false
+        }
+
+        val polygons = getPolygons(
+            eventX = eventX,
+            eventY = eventY
+        )
+
+        if (polygons.isEmpty()) {
+            return onDragFailed(figureTag)
+        }
+
+        val matchList = getMatchesList(
+            gameList = gameList,
+            polygons = polygons
+        )
+
+        if (matchList.isEmpty()) {
+            return onDragFailed(figureTag)
+        }
+
+        val matchSize = matchList.size
+        val polygonsSize = polygons.size
+
+        return if (polygonsSize == matchSize) {
+            val list = gameList.toMutableList()
+            matchList.forEach { gameState ->
+                val index = list.indexOf(gameState)
+                if (index != -1) {
+                    list[index] = gameState.copy(
+                        colorState = dragFigureState.colorState,
+                        isActive = true
+                    )
+                }
+
+            }
+            gameList = list
+
+            dragFigureState = GameRandomFigureState.EMPTY
+
+            onClearCheck(gameList)
+
+            refreshBlocksAllEmpty()
+
+            true
+        } else {
+            onDragFailed(figureTag)
         }
     }
 
@@ -360,6 +473,10 @@ class GameViewModel(
         originalTouchY: Int,
         view: View
     ) {
+        if (figureHeight <= 0 || figureWidth <= 0) {
+            return
+        }
+
         val figureShadow = GameFigureDragShadowBuilder(
             view = view,
             width = figureWidth,
@@ -380,7 +497,7 @@ class GameViewModel(
             figureClipData,
             figureShadow,
             view,
-            DRAG_FLAG_OPAQUE,
+            DRAG_FLAG_OPAQUE
         )
     }
 }

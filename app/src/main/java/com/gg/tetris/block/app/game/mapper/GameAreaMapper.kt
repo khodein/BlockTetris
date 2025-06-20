@@ -1,25 +1,23 @@
 package com.gg.tetris.block.app.game.mapper
 
 import com.gg.tetris.block.app.R
-import com.gg.tetris.block.app.game.GameParams
+import com.gg.tetris.block.app.game.manager.bitmap.GameBitmapManager
+import com.gg.tetris.block.app.game.manager.params.GameParamsManager
 import com.gg.tetris.block.app.game.states.color.ColorState
 import com.gg.tetris.block.app.game.states.coordinate.CoordinateState
 import com.gg.tetris.block.app.game.states.game.GameState
 import com.gg.tetris.block.app.game.states.owner.OwnerState
-import com.gg.tetris.block.app.game.view.area.GameAreaItem
+import com.gg.tetris.block.app.game.view.area.AreaItem
 import com.gg.tetris.block.app.managers.ResManager
 
 class GameAreaMapper(
     private val resManager: ResManager,
-    private val gameBitmapMapper: GameBitmapMapper
+    private val gameBitmapManager: GameBitmapManager,
+    private val gameParamsManager: GameParamsManager,
 ) {
-    fun mapAreaBackground(): GameAreaItem.Background {
-        return GameAreaItem.Background(
-            width = GameParams.AREA_SIZE,
-            height = GameParams.AREA_SIZE,
-            strokeWidth = GameParams.AREA_STROKE_WIDTH,
-            strokeHalfWidth = GameParams.AREA_HALF_STROKE_WIDTH,
-            raddi = GameParams.AREA_RADDI,
+    fun mapAreaState(): AreaItem.AreaState {
+        return AreaItem.AreaState(
+            area = gameParamsManager.getArea(),
             strokeColor = resManager.getColor(R.color.game_stroke),
             backgroundColor = resManager.getColor(R.color.game_surface)
         )
@@ -28,11 +26,13 @@ class GameAreaMapper(
     fun mapGameState(
         areaCoordinate: CoordinateState,
     ): List<GameState> {
+        val originalBlockParams = gameParamsManager.getOriginalBlock()
+        val areaParams = gameParamsManager.getArea()
 
         var screenX =
-            (areaCoordinate.x + GameParams.AREA_STROKE_WIDTH) + (GameParams.BLOCK_SIZE / 2f)
+            (areaCoordinate.x + areaParams.strokeWidth) + (originalBlockParams.size / 2f)
         var screenY =
-            (areaCoordinate.y + GameParams.AREA_STROKE_WIDTH) + (GameParams.BLOCK_SIZE / 2f)
+            (areaCoordinate.y + areaParams.strokeWidth) + (originalBlockParams.size / 2f)
         var count = 0
 
         return OwnerState.areaOwnerListState.map {
@@ -45,13 +45,13 @@ class GameAreaMapper(
                 colorState = ColorState.EMPTY
             )
 
-            screenX += GameParams.BLOCK_SIZE + GameParams.BLOCK_PADDING_DELIMITER
+            screenX += originalBlockParams.size + originalBlockParams.offset
             count++
 
             if (count == 8) {
                 screenX =
-                    (areaCoordinate.x + GameParams.AREA_STROKE_WIDTH) + (GameParams.BLOCK_SIZE / 2f)
-                screenY += GameParams.BLOCK_SIZE + GameParams.BLOCK_PADDING_DELIMITER
+                    (areaCoordinate.x + areaParams.strokeWidth) + (originalBlockParams.size / 2f)
+                screenY += originalBlockParams.size + originalBlockParams.offset
                 count = 0
             }
 
@@ -61,33 +61,75 @@ class GameAreaMapper(
 
     fun mapBlocksList(
         listGameStates: List<GameState>
-    ): List<GameAreaItem.Block> {
+    ): List<AreaItem.Block> {
         if (listGameStates.isEmpty()) {
             return emptyList()
         }
 
-        var stepLeft = GameParams.AREA_STROKE_WIDTH
-        var stepTop = GameParams.AREA_STROKE_WIDTH
+        val originalBlockParams = gameParamsManager.getOriginalBlock()
+        val areaParams = gameParamsManager.getArea()
+
+        var stepLeft = areaParams.strokeWidth.toFloat()
+        var stepTop = areaParams.strokeWidth.toFloat()
         var count = 0
 
         return listGameStates.map {
-            val bitmap = gameBitmapMapper.getBlockBitmap(
-                state = it.colorState,
-                isContainer = false
-            )
-            val state = GameAreaItem.Block(
+            val bitmap = gameBitmapManager.getGameBitmapState(state = it.colorState)
+
+            val state = AreaItem.Block(
                 owner = it.ownerState,
                 left = stepLeft,
                 top = stepTop,
-                bitmap = bitmap,
+                bitmap = bitmap.originalBitmap,
             )
 
-            stepLeft += GameParams.BLOCK_SIZE + GameParams.BLOCK_PADDING_DELIMITER
+            stepLeft += originalBlockParams.size + originalBlockParams.offset
             count++
 
             if (count == 8) {
-                stepLeft = GameParams.AREA_STROKE_WIDTH
-                stepTop += GameParams.BLOCK_SIZE + GameParams.BLOCK_PADDING_DELIMITER
+                stepLeft = areaParams.strokeWidth.toFloat()
+                stepTop += originalBlockParams.size + originalBlockParams.offset
+                count = 0
+            }
+
+            state
+        }
+    }
+
+    fun mapLocationBlocksList(
+        listGameStates: List<GameState>
+    ): List<AreaItem.Block> {
+        if (listGameStates.isEmpty()) {
+            return emptyList()
+        }
+
+        val originalBlockParams = gameParamsManager.getOriginalBlock()
+        val areaParams = gameParamsManager.getArea()
+
+        var stepLeft = areaParams.strokeWidth.toFloat()
+        var stepTop = areaParams.strokeWidth.toFloat()
+        var count = 0
+
+        val bitmap = gameBitmapManager.getGameLocationBitmap()
+
+        return listGameStates.mapNotNull {
+            val state = if (it.isLocation) {
+                AreaItem.Block(
+                    owner = it.ownerState,
+                    left = stepLeft,
+                    top = stepTop,
+                    bitmap = bitmap,
+                )
+            } else {
+                null
+            }
+
+            stepLeft += originalBlockParams.size + originalBlockParams.offset
+            count++
+
+            if (count == 8) {
+                stepLeft = areaParams.strokeWidth.toFloat()
+                stepTop += originalBlockParams.size + originalBlockParams.offset
                 count = 0
             }
 

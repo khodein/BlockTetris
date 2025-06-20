@@ -26,7 +26,7 @@ data class PolygonState(
     val maxY: Float
         get() = maxOf(topLeft.y, topRight.y, bottomLeft.y, bottomRight.y)
 
-    fun contains(
+    fun isMatch(
         x: Float,
         y: Float
     ): Boolean = x in minX..maxX && y in minY..maxY
