@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Regular">
+        <item name="fontFamily">@font/regular</item>
+    </style>
+
+    <style name="Bold">
+        <item name="fontFamily">@font/bold</item>
+        <item name="fontWeight">0</item>
+    </style>
+
+    <style name="Bold.22">
+        <item name="android:textSize">22sp</item>
+    </style>
+</resources>

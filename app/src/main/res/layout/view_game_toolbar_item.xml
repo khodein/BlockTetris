@@ -7,16 +7,43 @@
     tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout">
 
     <ImageButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/game_toolbar_back"
+        android:layout_width="50dp"
+        android:layout_height="60dp"
         android:padding="0dp"
-        android:paddingEnd="0dp"
-        android:paddingStart="0dp"
+        android:cropToPadding="true"
         android:background="@android:color/transparent"
         android:src="@drawable/ic_arrow_back"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="@color/white" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/game_toolbar_back_barrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="right"
+        app:barrierMargin="20dp"
+        app:constraint_referenced_ids="game_toolbar_back" />
+
+    <LinearLayout
+        android:id="@+id/game_toolbar_score_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/game_toolbar_back_barrier"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.gg.tetris.block.app.game.view.score.ScoreItemView
+            android:id="@+id/game_toolbar_score_top"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
+
+    </LinearLayout>
 
 </merge>
