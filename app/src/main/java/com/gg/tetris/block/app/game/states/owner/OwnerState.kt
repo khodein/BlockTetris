@@ -6,6 +6,10 @@ data class OwnerState(
     val horizontal: Horizontal,
 ) {
 
+    fun toCoordinates(): Pair<Int, Int> {
+        return horizontal.ordinal to vertical.ordinal
+    }
+
     enum class Horizontal {
         A,
         B,

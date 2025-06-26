@@ -2,6 +2,7 @@ package com.gg.tetris.block.app.game
 
 import android.content.ClipData
 import android.content.ClipDescription
+import android.util.Log
 import android.view.DragEvent
 import android.view.View
 import android.view.View.DRAG_FLAG_OPAQUE
@@ -10,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gg.tetris.block.app.BuildConfig
 import com.gg.tetris.block.app.game.builder.GameFigureDragShadowBuilder
+import com.gg.tetris.block.app.game.command.figure.FigureState
 import com.gg.tetris.block.app.game.manager.figure.GameFigureManager
 import com.gg.tetris.block.app.game.manager.params.GameParamsManager
 import com.gg.tetris.block.app.game.manager.random.GameRandomizerManager
@@ -25,6 +27,7 @@ import com.gg.tetris.block.app.game.states.polygon.PolygonState
 import com.gg.tetris.block.app.game.view.area.AreaItem
 import com.gg.tetris.block.app.game.view.container.ContainerFigureItem
 import com.gg.tetris.block.app.game.view.refresh.GameRefreshItem
+import com.gg.tetris.block.app.managers.RouterManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,6 +41,7 @@ class GameViewModel(
     private val gameCoordinateMapper: GameCoordinateMapper,
     private val gameFigureManager: GameFigureManager,
     private val gameParamsManager: GameParamsManager,
+    private val routerManager: RouterManager,
 ) : ViewModel(), OnDragListener, ContainerFigureItem.Provider {
 
     private var dragLocationJob: Job? = null
@@ -122,7 +126,7 @@ class GameViewModel(
         updateBackgroundStateGameArea()
         updateRefreshState()
 
-        refreshBlocks()
+        refreshBlocks(true)
     }
 
     private fun updateCoordinateState() {
@@ -139,54 +143,83 @@ class GameViewModel(
     private fun updateRefreshState() {
         _refreshBlocksFlow.value = gameRefreshMapper.map(
             count = 2,
-            onClickRefresh = ::refreshBlocks
+            onClickRefresh = ::clearRefreshBlocks
         )
     }
 
-    private fun refreshBlocksAllEmpty() {
-        if (
-            leftFigureState == GameRandomFigureState.EMPTY &&
-            centerFigureState == GameRandomFigureState.EMPTY &&
-            rightFigureState == GameRandomFigureState.EMPTY
-        ) {
-            refreshBlocks()
-        }
+    private fun clearRefreshBlocks() {
+        refreshBlocks(isAll = true)
     }
 
-    private fun refreshBlocks() {
+    private fun refreshBlocks(isAll: Boolean) {
         viewModelScope.launch(Dispatchers.Default) {
             runCatching {
                 Triple(
-                    refreshLeftFigure(),
-                    refreshCenterFigure(),
-                    refreshRightFigure()
+                    refreshLeftFigure(isAll),
+                    refreshCenterFigure(isAll),
+                    refreshRightFigure(isAll)
                 )
             }.onSuccess {
                 leftFigureState = it.first
                 centerFigureState = it.second
                 rightFigureState = it.third
+                canPlaceFigure()
             }.onFailure {
                 gameRandomizerManager.reset()
             }
         }
     }
 
-    private fun refreshLeftFigure(): GameRandomFigureState {
-        return gameRandomizerManager.getRandomFigure()
+    private fun canPlaceFigure() {
+        val isCanPlace = buildList<Boolean> {
+            if (leftFigureState != GameRandomFigureState.EMPTY) {
+                canPlaceFigure(gameList, leftFigureState.figureState).let(::add)
+            }
+
+            if (centerFigureState != GameRandomFigureState.EMPTY) {
+                canPlaceFigure(gameList, centerFigureState.figureState).let(::add)
+            }
+
+            if (rightFigureState != GameRandomFigureState.EMPTY) {
+                canPlaceFigure(gameList, rightFigureState.figureState).let(::add)
+            }
+        }.all { it == false }
+
+        if (isCanPlace) {
+            routerManager.toast("Игра закончена")
+        }
     }
 
-    private fun refreshCenterFigure(): GameRandomFigureState {
-        return gameRandomizerManager.getRandomFigure()
+    private fun refreshLeftFigure(isAll: Boolean = false): GameRandomFigureState {
+        return if (leftFigureState == GameRandomFigureState.EMPTY || isAll) {
+            gameRandomizerManager.getRandomFigure()
+        } else {
+            leftFigureState
+        }
     }
 
-    private fun refreshRightFigure(): GameRandomFigureState {
-        return gameRandomizerManager.getRandomFigure()
+    private fun refreshCenterFigure(isAll: Boolean = false): GameRandomFigureState {
+        return if (centerFigureState == GameRandomFigureState.EMPTY || isAll) {
+            gameRandomizerManager.getRandomFigure()
+        } else {
+            centerFigureState
+        }
+    }
+
+    private fun refreshRightFigure(isAll: Boolean = false): GameRandomFigureState {
+        return if (rightFigureState == GameRandomFigureState.EMPTY || isAll) {
+            gameRandomizerManager.getRandomFigure()
+        } else {
+            rightFigureState
+        }
     }
 
     override fun onDrag(view: View?, event: DragEvent?): Boolean {
-        val figureTag = event?.clipDescription?.label?.let {
-            ContainerFigureItem.Tag.valueOf(it.toString())
-        }
+        val figureTag = event
+            ?.clipDescription
+            ?.label
+            ?.toString()
+            ?.let(ContainerFigureItem.Tag::valueOf)
 
         onDragLocationCancel()
 
@@ -234,6 +267,8 @@ class GameViewModel(
                 }
             }
         }
+
+        refreshBlocks(false)
     }
 
     private fun getPolygons(
@@ -457,8 +492,6 @@ class GameViewModel(
 
             onClearCheck(gameList)
 
-            refreshBlocksAllEmpty()
-
             true
         } else {
             onDragFailed(figureTag)
@@ -499,5 +532,52 @@ class GameViewModel(
             view,
             DRAG_FLAG_OPAQUE
         )
+    }
+
+    private fun canPlaceFigure(gameStates: List<GameState>, figure: FigureState): Boolean {
+        val list = findAllValidPositions(
+            field = gameStates,
+            figure = figure
+        )
+
+        Log.d("tagagatg ", "tag " + list)
+        return list.isNotEmpty()
+    }
+
+    fun findAllValidPositions(
+        field: List<GameState>,
+        figure: FigureState
+    ): List<Pair<Int, Int>> {
+        val validPositions = mutableListOf<Pair<Int, Int>>()
+        val mask = figure.mask
+
+        val maxRow = mask.maxOf { it.first }
+        val maxCol = mask.maxOf { it.second }
+
+        for (startRow in 0..<8) {
+            for (startCol in 0..<8) {
+                if (startRow + maxRow >= 8 || startCol + maxCol >= 8) continue
+
+                if (canPlaceFigure(field, figure, startRow, startCol)) {
+                    validPositions.add(startRow to startCol)
+                }
+            }
+        }
+
+        return validPositions
+    }
+
+    fun canPlaceFigure(
+        field: List<GameState>,
+        figure: FigureState,
+        startRow: Int,
+        startCol: Int
+    ): Boolean {
+        val mask = figure.mask
+        return mask.all { (dr, dc) ->
+            val row = startRow + dr
+            val col = startCol + dc
+            row in 0..7 && col in 0..7 && !field[row * 8 + col].isActive
+        }
     }
 }

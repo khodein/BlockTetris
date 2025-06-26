@@ -1,5 +1,8 @@
 package com.gg.tetris.block.app.managers
 
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph
 import androidx.navigation.NavOptions
@@ -36,6 +39,12 @@ class RouterManager {
 
     private fun navigate(contract: Contract, navOptions: NavOptions? = null) {
         navController.navigate(contract, navOptions)
+    }
+
+    fun toast(text: String) {
+        Handler(Looper.getMainLooper()).post {
+            Toast.makeText(navController.context, text, Toast.LENGTH_SHORT).show()
+        }
     }
 
     sealed interface Contract {
