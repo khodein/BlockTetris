@@ -26,6 +26,8 @@ import com.gg.tetris.block.app.game.states.game.GameState
 import com.gg.tetris.block.app.game.states.polygon.PolygonState
 import com.gg.tetris.block.app.game.view.area.AreaItem
 import com.gg.tetris.block.app.game.view.container.ContainerFigureItem
+import com.gg.tetris.block.app.game.view.figure.FigureItem
+import com.gg.tetris.block.app.game.view.figure.FigureItemView
 import com.gg.tetris.block.app.game.view.refresh.GameRefreshItem
 import com.gg.tetris.block.app.managers.RouterManager
 import kotlinx.coroutines.Dispatchers
@@ -92,8 +94,9 @@ class GameViewModel(
         set(value) {
             _leftContainerFigureFlow.value = ContainerFigureItem.State(
                 tag = ContainerFigureItem.Tag.LEFT,
-                figureState = gameFigureManager.getState(value),
+                figureState = gameFigureManager.getState(value).copy(isContainer = true),
                 container = gameParamsManager.getContainer(),
+                isDragStarted = false,
                 provider = this
             )
             field = value
@@ -103,8 +106,9 @@ class GameViewModel(
         set(value) {
             _centerContainerFigureFlow.value = ContainerFigureItem.State(
                 tag = ContainerFigureItem.Tag.CENTER,
-                figureState = gameFigureManager.getState(value),
+                figureState = gameFigureManager.getState(value).copy(isContainer = true),
                 container = gameParamsManager.getContainer(),
+                isDragStarted = false,
                 provider = this,
             )
             field = value
@@ -114,8 +118,9 @@ class GameViewModel(
         set(value) {
             _rightContainerFigureFlow.value = ContainerFigureItem.State(
                 tag = ContainerFigureItem.Tag.RIGHT,
-                figureState = gameFigureManager.getState(value),
+                figureState = gameFigureManager.getState(value).copy(isContainer = true),
                 container = gameParamsManager.getContainer(),
+                isDragStarted = false,
                 provider = this
             )
             field = value
@@ -223,23 +228,33 @@ class GameViewModel(
 
         onDragLocationCancel()
 
-        return when (event?.action) {
+        val state = (event?.localState as? FigureItemView)?.state
+
+        if (state == null || figureTag == null) {
+            return false
+        }
+
+        return when (event.action) {
             DragEvent.ACTION_DRAG_STARTED -> onDragStarted(figureTag)
 
-            DragEvent.ACTION_DROP -> onDragDrop(
-                figureTag = figureTag,
-                eventX = event.x,
-                eventY = event.y,
-            )
+            DragEvent.ACTION_DROP -> {
+                onDragDrop(
+                    tag = figureTag,
+                    state = state,
+                    eventX = event.x,
+                    eventY = event.y,
+                )
+            }
 
             DragEvent.ACTION_DRAG_LOCATION -> onDragLocation(
+                state = state,
                 eventX = event.x,
                 eventY = event.y
             )
 
             DragEvent.ACTION_DRAG_EXITED -> onDragFailed(figureTag)
 
-            else -> true
+            else -> false
         }
     }
 
@@ -272,11 +287,10 @@ class GameViewModel(
     }
 
     private fun getPolygons(
+        figureState: FigureItem.State,
         eventX: Float,
         eventY: Float,
     ): List<PolygonState> {
-        val figureState = gameFigureManager.getState(dragFigureState)
-
         val originalHeight = figureState.originalState.height
         val originalWidth = figureState.originalState.width
 
@@ -327,64 +341,77 @@ class GameViewModel(
         }
     }
 
-    private fun onDragFailed(
-        figureTag: ContainerFigureItem.Tag?
-    ): Boolean {
+    private fun onDragSuccess(figureTag: ContainerFigureItem.Tag) {
         when (figureTag) {
             ContainerFigureItem.Tag.LEFT -> {
-                leftFigureState = dragFigureState
+                leftFigureState = GameRandomFigureState.EMPTY
             }
 
             ContainerFigureItem.Tag.CENTER -> {
-                centerFigureState = dragFigureState
+                centerFigureState = GameRandomFigureState.EMPTY
             }
 
             ContainerFigureItem.Tag.RIGHT -> {
-                rightFigureState = dragFigureState
+                rightFigureState = GameRandomFigureState.EMPTY
+            }
+        }
 
+        dragFigureState = GameRandomFigureState.EMPTY
+    }
+
+    private fun onDragFailed(
+        figureTag: ContainerFigureItem.Tag
+    ): Boolean {
+        when (figureTag) {
+            ContainerFigureItem.Tag.LEFT -> {
+                _leftContainerFigureFlow.value =
+                    leftContainerFigureFlow.value?.copy(isDragStarted = false)
             }
 
-            else -> Unit
+            ContainerFigureItem.Tag.CENTER -> {
+                _centerContainerFigureFlow.value =
+                    centerContainerFigureFlow.value?.copy(isDragStarted = false)
+            }
+
+            ContainerFigureItem.Tag.RIGHT -> {
+                _rightContainerFigureFlow.value =
+                    rightContainerFigureFlow.value?.copy(isDragStarted = false)
+            }
         }
 
         dragFigureState = GameRandomFigureState.EMPTY
 
-        return false
+        return true
     }
 
     private fun onDragStarted(
-        figureTag: ContainerFigureItem.Tag?
+        figureTag: ContainerFigureItem.Tag
     ): Boolean {
-        return when (figureTag) {
+        dragFigureState = when (figureTag) {
             ContainerFigureItem.Tag.LEFT -> {
-                val state = leftFigureState
-                leftFigureState = GameRandomFigureState.EMPTY
-                dragFigureState = state
-                true
+                _leftContainerFigureFlow.value =
+                    leftContainerFigureFlow.value?.copy(isDragStarted = true)
+                leftFigureState
             }
 
             ContainerFigureItem.Tag.CENTER -> {
-                val state = centerFigureState
-                centerFigureState = GameRandomFigureState.EMPTY
-                dragFigureState = state
-                true
+                _centerContainerFigureFlow.value =
+                    centerContainerFigureFlow.value?.copy(isDragStarted = true)
+                centerFigureState
             }
 
             ContainerFigureItem.Tag.RIGHT -> {
-                val state = rightFigureState
-                rightFigureState = GameRandomFigureState.EMPTY
-                dragFigureState = state
-                true
-            }
-
-            else -> {
-                dragFigureState = GameRandomFigureState.EMPTY
-                false
+                _rightContainerFigureFlow.value =
+                    rightContainerFigureFlow.value?.copy(isDragStarted = true)
+                rightFigureState
             }
         }
+
+        return true
     }
 
     private fun onDragLocation(
+        state: FigureItem.State,
         eventX: Float,
         eventY: Float
     ): Boolean {
@@ -395,6 +422,7 @@ class GameViewModel(
         }
 
         val polygons = getPolygons(
+            figureState = state,
             eventX = eventX,
             eventY = eventY
         )
@@ -419,7 +447,7 @@ class GameViewModel(
 
         dragLocationJob?.cancel()
         dragLocationJob = viewModelScope.launch(Dispatchers.Default) {
-            _locationBlocksFlow.value = if (polygonsSize == matchSize) {
+            if (polygonsSize == matchSize) {
                 val list = gameList.toMutableList()
                 matchList.forEach { gameState ->
                     val index = list.indexOf(gameState)
@@ -429,9 +457,16 @@ class GameViewModel(
                         )
                     }
                 }
-                gameAreaMapper.mapLocationBlocksList(list)
+                val newList = gameAreaMapper.mapLocationBlocksList(list)
+                val isNotContains =
+                    newList.containsAll(locationBlocksFlow.value) && locationBlocksFlow.value.containsAll(
+                        newList
+                    )
+                if (!isNotContains) {
+                    _locationBlocksFlow.value = newList
+                }
             } else {
-                emptyList()
+                _locationBlocksFlow.value = emptyList()
             }
         }
 
@@ -444,7 +479,8 @@ class GameViewModel(
     }
 
     private fun onDragDrop(
-        figureTag: ContainerFigureItem.Tag?,
+        tag: ContainerFigureItem.Tag,
+        state: FigureItem.State,
         eventX: Float,
         eventY: Float
     ): Boolean {
@@ -455,11 +491,12 @@ class GameViewModel(
 
         val polygons = getPolygons(
             eventX = eventX,
-            eventY = eventY
+            eventY = eventY,
+            figureState = state
         )
 
         if (polygons.isEmpty()) {
-            return onDragFailed(figureTag)
+            return onDragFailed(figureTag = tag)
         }
 
         val matchList = getMatchesList(
@@ -468,7 +505,7 @@ class GameViewModel(
         )
 
         if (matchList.isEmpty()) {
-            return onDragFailed(figureTag)
+            return onDragFailed(figureTag = tag)
         }
 
         val matchSize = matchList.size
@@ -477,9 +514,8 @@ class GameViewModel(
         return if (polygonsSize == matchSize) {
             val list = gameList.toMutableList()
             matchList.forEach { gameState ->
-                val index = list.indexOf(gameState)
-                if (index != -1) {
-                    list[index] = gameState.copy(
+                if (gameState in list) {
+                    list[list.indexOf(gameState)] = gameState.copy(
                         colorState = dragFigureState.colorState,
                         isActive = true
                     )
@@ -488,13 +524,13 @@ class GameViewModel(
             }
             gameList = list
 
-            dragFigureState = GameRandomFigureState.EMPTY
+            onDragSuccess(figureTag = tag)
 
             onClearCheck(gameList)
 
             true
         } else {
-            onDragFailed(figureTag)
+            onDragFailed(figureTag = tag)
         }
     }
 

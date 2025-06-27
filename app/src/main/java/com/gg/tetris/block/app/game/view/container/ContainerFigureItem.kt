@@ -12,6 +12,7 @@ class ContainerFigureItem {
     data class State(
         val tag: Tag,
         val container: ParamsState.Container,
+        val isDragStarted: Boolean,
         val figureState: FigureItem.State,
         val provider: Provider,
     )

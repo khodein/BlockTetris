@@ -1,16 +1,14 @@
 package com.gg.tetris.block.app.game.view.container
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
 import android.view.Gravity
-import android.view.MotionEvent
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
-import androidx.core.view.isVisible
+import androidx.core.view.children
 import androidx.core.view.updateLayoutParams
 import com.gg.tetris.block.app.R
 import com.gg.tetris.block.app.game.view.figure.FigureItem
@@ -20,6 +18,7 @@ import com.gg.tetris.block.app.utils.corner.RoundMode
 import com.gg.tetris.block.app.utils.corner.ViewCorner
 import com.gg.tetris.block.app.utils.dp
 import com.gg.tetris.block.app.utils.getColor
+import com.gg.tetris.block.app.utils.setOnCustomLongClickListener
 
 class ContainerFigureItemView @JvmOverloads constructor(
     context: Context,
@@ -31,24 +30,19 @@ class ContainerFigureItemView @JvmOverloads constructor(
     private val cornerBackgroundColor by lazy { getColor(R.color.game_container_block_surface) }
     private var state: ContainerFigureItem.State? = null
 
-    private val figureView by lazy {
-        FigureItemView(context).apply {
-            layoutParams = LayoutParams(
-                WRAP_CONTENT,
-                WRAP_CONTENT
-            ).apply {
-                gravity = Gravity.CENTER
-            }
-        }
-    }
-
     private val handler = Handler(Looper.getMainLooper())
+
+    private var figureView: FigureItemView? = null
 
     init {
         layoutParams = ViewGroup.LayoutParams(
             WRAP_CONTENT,
             WRAP_CONTENT,
         )
+
+        setOnCustomLongClickListener {
+            onClick()
+        }
 
         ViewCorner.Border(
             radius = 8.dp,
@@ -58,21 +52,20 @@ class ContainerFigureItemView @JvmOverloads constructor(
                 strokeColor = cornerStrokeColor
             )
         ).resolve(this, cornerBackgroundColor)
-
-        addView(figureView)
     }
 
     private fun onClick() {
         val state = this.state
-        if (state == null) {
+        val view = figureView
+        if (state == null || view == null) {
             return
         }
-        figureView.isVisible = false
         val newState = state.figureState.copy(isContainer = false)
-        figureView.bindState(newState)
+        view.bindState(newState)
         handler.post(
             getRunDragAndDrop(
                 state = newState,
+                view = view,
                 tag = state.tag
             )
         )
@@ -80,10 +73,11 @@ class ContainerFigureItemView @JvmOverloads constructor(
 
     private fun getRunDragAndDrop(
         state: FigureItem.State,
+        view: FigureItemView,
         tag: ContainerFigureItem.Tag
     ) = Runnable {
         this.state?.provider?.onDragAndDrop(
-            view = figureView,
+            view = view,
             tag = tag,
             figureWidth = state.originalState.width,
             figureHeight = state.originalState.height,
@@ -95,23 +89,39 @@ class ContainerFigureItemView @JvmOverloads constructor(
     override fun bindState(state: ContainerFigureItem.State) {
         this.state = state
         val size = state.container.size.toInt()
-        figureView.isVisible = true
         this.updateLayoutParams {
             width = size
             height = size
         }
-        figureView.bindState(state.figureState)
+
+        val view = children.find { it.id == FIGURE_VIEW_ID }
+
+        if (state.isDragStarted) {
+            if (view != null) {
+                removeView(view)
+                this.figureView = null
+            }
+        } else {
+            val figureView = figureView ?: FigureItemView(context).apply {
+                id = FIGURE_VIEW_ID
+                layoutParams = LayoutParams(
+                    WRAP_CONTENT,
+                    WRAP_CONTENT
+                ).apply {
+                    gravity = Gravity.CENTER
+                }
+
+            }.also { figureView = it }
+
+            figureView.bindState(state.figureState)
+
+            if (view == null) {
+                addView(figureView)
+            }
+        }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-        return when (event.action) {
-            MotionEvent.ACTION_DOWN -> {
-                onClick()
-                true
-            }
-
-            else -> false
-        }
+    private companion object {
+        val FIGURE_VIEW_ID = generateViewId()
     }
 }

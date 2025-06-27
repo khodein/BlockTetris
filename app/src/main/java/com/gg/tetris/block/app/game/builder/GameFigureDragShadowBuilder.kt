@@ -5,7 +5,7 @@ import android.view.View
 import android.view.View.DragShadowBuilder
 
 class GameFigureDragShadowBuilder(
-    view: View,
+    private val view: View,
     private val width: Int,
     private val height: Int,
     private val originalTouchX: Int,

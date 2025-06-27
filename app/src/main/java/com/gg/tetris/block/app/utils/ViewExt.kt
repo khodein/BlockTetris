@@ -1,5 +1,9 @@
 package com.gg.tetris.block.app.utils
 
+import android.annotation.SuppressLint
+import android.os.Handler
+import android.os.Looper
+import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
@@ -30,4 +34,23 @@ fun View.applyPadding(
     bottom: Int = this.paddingBottom
 ) {
     setPadding(left, top, right, bottom)
+}
+
+fun View.setOnCustomLongClickListener(
+    duration: Long = 300L,
+    listener: () -> Unit
+) {
+    setOnTouchListener(object : View.OnTouchListener {
+        private val handler = Handler(Looper.getMainLooper())
+
+        @SuppressLint("ClickableViewAccessibility")
+        override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+            if (event?.action == MotionEvent.ACTION_DOWN) {
+                handler.postDelayed({ listener.invoke() }, duration)
+            } else if (event?.action == MotionEvent.ACTION_UP) {
+                handler.removeCallbacksAndMessages(null)
+            }
+            return true
+        }
+    })
 }
